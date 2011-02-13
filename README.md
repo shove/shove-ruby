@@ -12,35 +12,35 @@
 ##Install Step 3
   Configure shover with your credentials
   
-  require "shove"
+    require "shove"
   
-  Shove.configure(
-    :network => "network",
-    :key => "apikey"
-  )
+    Shove.configure(
+      :network => "network",
+      :key => "apikey"
+    )
 
 ##Broadcast messages
 
-  # broadcast the "hello" event on the "default" channel with
-  # Hello World! as the data
-  Shove.broadcast("default", "hello", "Hello World!") do |response|
-    puts response.error?
-    puts response.status
-    puts response.message
-  end
+    # broadcast the "hello" event on the "default" channel with
+    # Hello World! as the data
+    Shove.broadcast("default", "hello", "Hello World!") do |response|
+      puts response.error?
+      puts response.status
+      puts response.message
+    end
   
 ##Direct messages
 
-  Shove.direct(userid, "hello", "Hello World!") do |response|
-    # handle response
-  end
+    Shove.direct(userid, "hello", "Hello World!") do |response|
+      # handle response
+    end
 
 ##Authorize a user
 
-  # authorize user with id userid on channel "default"
-  Shove.authorize(userid, "default") do |response|
-    # handle response
-  end
+    # authorize user with id userid on channel "default"
+    Shove.authorize(userid, "default") do |response|
+      # handle response
+    end
   
 ##Block and Non-blocking
   shover does both.  If the shover code happens to run inside of an EM.run block, the HTTP calls
