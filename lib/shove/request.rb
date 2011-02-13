@@ -1,4 +1,3 @@
-
 module Shove
   class Request
     
@@ -20,6 +19,8 @@ module Shove
             block.call(Response.new(http.response_header.status, http.response, false))
           }
         end
+      else
+        raise "EM requests only for now."
       end
     end
 

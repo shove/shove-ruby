@@ -8,6 +8,10 @@ module Shove
       self.message = message
       self.error = error
     end
+    
+    def error?
+      error
+    end
 
   end
 end
