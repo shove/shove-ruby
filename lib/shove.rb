@@ -1,10 +1,8 @@
 $:.unshift File.dirname(__FILE__)
 
 require "rubygems"
-require "eventmachine"
-require "em-http"
+require "em-http-request"
 require "yaml"
-require "json"
 
 ##
 # Shove
@@ -12,7 +10,7 @@ require "json"
 # See http://shove.io for an account
 module Shove
   
-  Version = 0.2
+  Version = 0.3
   
   class << self
   
