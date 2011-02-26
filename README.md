@@ -7,7 +7,7 @@
 	gem install shove
 
 ##Install Step 2
-  Grab your network id and API key from shove at [http://shove.io/customer/network/api_access]
+  Grab your network id and API key from shove at [http://shove.io/customer/network/api_access][0]
   
 ##Install Step 3
   Configure shover with your credentials
@@ -50,6 +50,8 @@
   
 ##CLI (Command line interface)
   The shove gem comes with a command line tool for controlling the network.
-  View documentation @ [http://shove.io/documentation/cli]
-    
-    
+  View documentation @ [http://shove.io/documentation/cli][1]
+
+
+[0]: http://shove.io/customer/network/api_access
+[1]: http://shove.io/documentation/cli
