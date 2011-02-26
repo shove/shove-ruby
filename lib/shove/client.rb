@@ -9,7 +9,7 @@ module Shove
     # :host leave as default unless you are given a private cluster
     def initialize network, key, opts={}
       @network = network
-      @cluster = opts[:cluster] || "a04"
+      @cluster = opts[:cluster] || "a01"
       @key = key
       @auth_header = { "api-key" => key }
       @secure = opts[:secure] || false
