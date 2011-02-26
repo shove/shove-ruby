@@ -4,7 +4,7 @@ module Shove
     attr_accessor :status, :message, :error
     
     def initialize status, message, error=false
-      self.status = status
+      self.status = status.to_i
       self.message = message
       self.error = error
     end

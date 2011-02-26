@@ -9,10 +9,11 @@ module Shove
     # :host leave as default unless you are given a private cluster
     def initialize network, key, opts={}
       @network = network
+      @cluster = opts[:cluster] || "a04"
       @key = key
       @auth_header = { "api-key" => key }
       @secure = opts[:secure] || false
-      @host = opts[:host] || "api.shove.io"
+      @host = opts[:host] || "api.#{@cluster}.shove.io"
     end
     
     # broadcast a message
@@ -36,6 +37,12 @@ module Shove
     # +channel+ the channel to authorize them on
     def authorize uid, channel="*", &block
       Request.new("#{uri}/#{@network}/authorize/#{channel}/#{uid}", @auth_header).post(&block)
+    end
+    
+    def validate
+      Request.new("#{uri}/#{@network}/validate", @auth_header).post do |response|
+        return response
+      end
     end
     
     protected

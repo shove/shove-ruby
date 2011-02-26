@@ -1,0 +1,126 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "commander/import"
+require "shove"
+
+ymlpath = File.expand_path("~/.shove.yml") 
+
+# get network, key, cluster
+unless FileTest.exist?(ymlpath)
+
+  access = {}
+  
+  loop do
+    
+    say "Please enter your network information."
+    say "Visit http://shove.io/customer/network/api_access for more info."
+    
+    access[:cluster] = ask "Enter Cluster Group: "
+    access[:network] = ask "Enter Network Id: "
+    access[:key] = ask "Enter Network Key: "
+
+    Shove.configure access
+    
+    check = Shove.validate
+    if check.status >= 400
+      say "Unable to validate network settings.  Error: #{check.message}"
+    else
+      break
+    end
+    
+  end
+
+  File.open(ymlpath, "w") do |f|
+    f << access.to_yaml
+  end
+    
+end
+
+Shove.configure(ymlpath)
+
+# Commander specification
+
+program :name, "shove"
+program :version, Shove::Version
+program :description, "CLI for the shove.io push platform"
+program :help, "Author", "Dan Simpson <dan@shove.io>"
+program :formatter, :compact
+
+command :stream do |c|
+  c.syntax = "shove stream channel"
+  c.example "Streams the default channel", "shove stream default"
+  c.description = "Stream all data on a given channel to the console"
+  c.action do |args, opts|
+    if args.empty?
+      say_invalid c
+    else
+      EM.run do
+        Shove.stream(args.first) { |m| say(m) }
+      end
+    end
+  end
+end
+alias_command :subscribe, :stream
+
+command :broadcast do |c|
+  c.syntax = "shove broadcast channel event data"
+  c.example "Broadcast x,y coordinates on the grid channel", "shove broadcast grid coords '1522,234'"
+  c.description = "Broadcast event and data to all subscribers of a given channel"
+  c.action do |args, opts|
+    if args.length != 3
+      say_invalid c
+    else
+      say "Broadcasting on channel #{args.first}"
+      Shove.broadcast(*args) do |response|
+        say response.message
+      end
+    end
+  end
+end
+
+command :direct do |c|
+  c.syntax = "shove direct user event data"
+  c.example "Send a message to user with id 9812737890", "shove direct 9812737890 message 'Your account expires in 2 minutes'"
+  c.description = "Send a message directly to a specific shove subscriber"
+  c.action do |args, opts|
+    if args.length != 3
+      say_invalid c
+    else
+      say "Sending data directly to user #{args.first}"
+      Shove.direct(*args) do |response|
+        say response.message
+      end
+    end
+  end
+end
+
+command :authorize do |c|
+  c.syntax = "shove authorize user channel"
+  c.example "Authorize user 9812737890 access to channel internal-bus", "shove authorize 9812737890 internal-bus"
+  c.description = "Authorize a pending channel subscription.  Only required for private channels."
+  c.action do |args, opts|
+    if args.length != 2
+      say_invalid c
+    else
+      say "Authorizing user #{args.first} on channel #{args.last}"
+      Shove.authorize(*args) do |response|
+        say response.message
+      end
+    end
+  end
+end
+
+
+def say_invalid cmd
+  puts "Invalid #{cmd.name} command. Syntax: #{cmd.syntax}"
+  unless cmd.examples.empty?
+    puts "Examples"
+    cmd.examples.each do |ex|
+      puts "---------"
+      puts ex.first
+      puts ex.last
+    end
+  end
+end
+

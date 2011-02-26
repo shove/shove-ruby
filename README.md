@@ -7,7 +7,7 @@
 	gem install shove
 
 ##Install Step 2
-  Grab your network id and API key from shove at http://shove.io/customer/network/api_access
+  Grab your network id and API key from shove at [http://shove.io/customer/network/api_access]
   
 ##Install Step 3
   Configure shover with your credentials
@@ -16,7 +16,8 @@
   
     Shove.configure(
       :network => "network",
-      :key => "apikey"
+      :key => "apikey",
+      :cluster => "cluster"
     )
 
 ##Broadcast messages
@@ -47,3 +48,8 @@
   will leverage em-http-request.  Otherwise, the requests fallback to net/http requests.  We recommend
   using EM if possible.
   
+##CLI (Command line interface)
+  The shove gem comes with a command line tool for controlling the network.
+  View documentation @ [http://shove.io/documentation/cli]
+    
+    

@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = "shove"
-  s.version = "0.3"
+  s.version = "0.4"
   s.date = "2010-12-16"
   s.summary = "Ruby gem for leveraging shove.io, the web push platform"
   s.email = "dan@shove.io"
@@ -9,7 +9,11 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   
   s.add_dependency("em-http-request", ">= 0.3.0")
+  s.add_dependency("commander", ">= 4.0.3")
   
+  s.bindir = "bin"
+	s.executables = ["shove"]
+	
   s.authors = ["Dan Simpson"]
 
   s.files = [
@@ -21,6 +25,7 @@ spec = Gem::Specification.new do |s|
     "lib/shove.rb",
     "lib/shove/request.rb",
     "lib/shove/response.rb",
-    "lib/shove/client.rb"
+    "lib/shove/client.rb",
+    "bin/shove"
   ]
 end
