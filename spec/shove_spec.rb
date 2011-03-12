@@ -13,5 +13,6 @@ describe Shove do
   it "should have config" do
     Shove.config["network"].should == "shove"
   end
+  
 
 end

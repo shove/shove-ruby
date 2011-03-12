@@ -9,8 +9,14 @@ module Shove
       self.error = error
     end
     
+    # was there an error with the request?
     def error?
       error
+    end
+    
+    # generate a hash from a json response
+    def to_hash
+      @hash ||= Yajl::Parser.new(:symbolize_keys => true).parse(message)
     end
 
   end
