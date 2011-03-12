@@ -56,7 +56,14 @@ command :stream do |c|
       say_invalid c
     else
       EM.run do
-        Shove.stream(args.first) { |m| say(m) }
+        Shove.stream(args.first) { |m| 
+          puts m[:channel]
+          puts m[:event]
+          puts m[:to] # this will either be empty or self
+          puts m[:from] # message sender
+          puts m[:data] # the payload
+          puts "============"
+        }
       end
     end
   end
