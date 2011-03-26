@@ -11,8 +11,7 @@ module Shove
       @network = opts[:network]
       @cluster = opts[:cluster] || "a01"
       @secure = opts[:secure] || false
-      @host = opts[:host] || "api.#{@cluster}.shove.io"
-      @web_host = opts[:web_host] || "shove.io"
+      @host = opts[:host] || "api-#{@cluster}.shove.io"
     end
     
     # broadcast a message
@@ -44,38 +43,11 @@ module Shove
         return response
       end
     end
-    
-    # Channel methods
-    
-    # create a channel
-    # +opts+ the hash containing channel options
-    #   :restricted
-    #   :name
-    def create_channel opts, &block
-      Request.new("#{channel_uri}").post({ :channel => opts }, &block)
-    end
-    
-    # delete a channel
-    # +name+ the name of the channel to delete
-    def delete_channel name, &block
-      Request.new("#{channel_uri}/#{name}").delete(&block)
-    end
-    
-    # update the attributes of a channel
-    # +name+ the name of the channel
-    # +opts+ the options hash to update
-    def update_channel name, opts, &block
-      Request.new("#{channel_uri}/#{name}").put({ :channel => opts }, &block)
-    end
-    
+        
     protected
     
     def uri
       (@secure ? "https" : "http") + "://#{@host}/#{@network}"
-    end
-    
-    def channel_uri
-      (@secure ? "https" : "http") + "://#{@web_host}/api/#{@network}/channels"
     end
     
   end

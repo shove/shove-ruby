@@ -9,10 +9,11 @@ require "yaml"
 ##
 # Shove
 # 
-# See http://shove.io for an account
+# See http://shove.io for an account and client documentation
+# See https://github.com/shove/shover for gem documentation
 module Shove
   
-  Version = 0.5
+  Version = 0.52
   
   class << self
   
@@ -61,29 +62,7 @@ module Shove
     def validate
       client.validate
     end
-
-    # Channel methods
-
-    # create a channel
-    # +opts+ the hash containing channel options
-    def create_channel opts, &block
-      client.create_channel opts, &block
-    end
     
-    # delete a channel
-    # +name+ the name of the channel to delete
-    def delete_channel name, &block
-      client.delete_channel name, &block
-    end
-    
-    # update the attributes of a channel
-    # +name+ the name of the channel
-    # +opts+ the options hash to update
-    def update_channel name, opts, &block
-      client.update_channel name, opts, &block
-    end
-    
-
     # act as a stream client.  requires EM
     # +channel+ the channel to stream
     def stream channel, &block
@@ -105,9 +84,7 @@ module Shove
       }
 
       http.stream { |msg|
-        
-        puts msg
-        
+
         parts = msg.split "!"
         
         case parts[1]

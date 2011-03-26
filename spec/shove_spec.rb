@@ -11,8 +11,30 @@ describe Shove do
   end
 
   it "should have config" do
-    Shove.config["network"].should == "shove"
+    Shove.config[:network].should == "deadbeef"
   end
   
+  it "should be able to authorize with the server" do
+    response = Shove.validate
+    response.error?.should == false
+  end
+  
+  it "should be able to broadcast a message" do
+    Shove.broadcast("default", "event", "test") do |response|
+      response.error?.should == false
+    end
+  end
+    
+  it "should be able to broadcast a message with EM" do
+    EM.run do
+      Shove.broadcast("default", "event", "test") do |response|
+        response.error?.should == false
+      end
+      
+      EM.add_timer(0.5) do
+          EM.stop
+      end
+    end
+  end
 
 end
