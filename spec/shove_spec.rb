@@ -11,7 +11,7 @@ describe Shove do
   end
 
   it "should have config" do
-    Shove.config[:network].should == "deadbeef"
+    Shove.config[:network].should == "test"
   end
   
   it "should be able to authorize with the server" do
