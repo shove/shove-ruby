@@ -6,12 +6,12 @@ module Shove
     # +key+ the api access key
     # +opts+ hash with a few options, such as:
     # :secure true or false
-    # :host leave as default unless you are given a private cluster
+    # :host leave as default unless you have a dedicated cluster
     def initialize opts={}
       @network = opts[:network]
-      @cluster = opts[:cluster] || "a01"
       @secure = opts[:secure] || false
-      @host = opts[:host] || "api-#{@cluster}.shove.io"
+      @host = opts[:host] || "api.shove.io"
+      @port = opts[:port] || (@secure ? 443 : 80)
     end
     
     # broadcast a message
@@ -43,11 +43,18 @@ module Shove
         return response
       end
     end
+    
+    # fetch a list of hosts for streaming websockets and comet
+    def hosts
+      Request.new("#{uri}/hosts").get do |response|
+        return response
+      end
+    end
         
     protected
     
     def uri
-      (@secure ? "https" : "http") + "://#{@host}/#{@network}"
+      (@secure ? "https" : "http") + "://#{@host}:#{@port}/#{@network}"
     end
     
   end

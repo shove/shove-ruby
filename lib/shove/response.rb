@@ -14,9 +14,14 @@ module Shove
       error
     end
     
-    # generate a hash from a json response
+    # parse a json response
+    def parse
+      @parsed ||= Yajl::Parser.new(:symbolize_keys => true).parse(message)
+    end
+    
+    # alias parse
     def to_hash
-      @hash ||= Yajl::Parser.new(:symbolize_keys => true).parse(message)
+      parse
     end
 
   end

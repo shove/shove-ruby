@@ -11,9 +11,10 @@ require "yaml"
 # 
 # See http://shove.io for an account and client documentation
 # See https://github.com/shove/shover for gem documentation
+# See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = 0.52
+  Version = 0.60
   
   class << self
   
@@ -25,6 +26,7 @@ module Shove
     def configure settings
       if settings.kind_of? String
         self.config = YAML.load_file(settings)
+        self.config
       elsif settings.kind_of? Hash
         self.config = settings
       else
@@ -63,16 +65,31 @@ module Shove
       client.validate
     end
     
+    # fetch the available stream hosts
+    # for this network.
+    def hosts
+      client.hosts
+    end
+    
     # act as a stream client.  requires EM
     # +channel+ the channel to stream
     def stream channel, &block
       
       unless EM.reactor_running?
-        raise "You can stream when running in an Eventmachine event loop.  EM.run { #code here }"
+        puts "You can stream when running in an Eventmachine event loop.  EM.run { #code here }"
+        exit
+      end
+      
+      ## Fetch hosts
+      hostnames = hosts
+      
+      if hostnames.empty?
+        puts "Error fetching hosts for network #{config[:network]}"
+        exit
       end
       
       uid  = ""
-      http = EventMachine::HttpRequest.new("ws://ws.shove.io/#{config[:network]}").get :timeout => 0
+      http = EventMachine::HttpRequest.new("ws://ws-#{hostnames.first}.shove.io/#{config[:network]}").get :timeout => 0
       
       http.errback {
         block.call("Connection Error")

@@ -16,7 +16,6 @@ unless FileTest.exist?(ymlpath)
     say "Please enter your network information."
     say "Visit http://shove.io/customer/network/api_access for more info."
     
-    access[:cluster] = ask "Enter Cluster Group: "
     access[:network] = ask "Enter Network Id: "
     access[:key] = ask "Enter Network Key: "
 
