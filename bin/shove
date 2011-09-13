@@ -1,30 +1,38 @@
 #!/usr/bin/env ruby
 
-require "rubygems"
-require "commander/import"
+$:.unshift File.dirname(__FILE__) + "/../lib"
+
+require "optparse"
 require "shove"
+require "pp"
 
 ymlpath = File.expand_path("~/.shove.yml") 
 
-# get network, key, cluster
+# get network and key
 unless FileTest.exist?(ymlpath)
+
+  def getinput text
+    print text
+    gets.strip
+  end
 
   access = {}
   
   loop do
     
-    say "Please enter your network information."
-    say "Visit http://shove.io/customer/network/api_access for more info."
+    puts "Please enter your network information."
+    puts "You can find your API access information @ https://shove.io/customer/network/api_access"
     
-    access[:network] = ask "Enter Network Id: "
-    access[:key] = ask "Enter Network Key: "
+    access[:network] = getinput "Enter Network Id: "
+    access[:key] = getinput "Enter Network Key: "
 
     Shove.configure access
     
     check = Shove.validate
     if check.status >= 400
-      say "Unable to validate network settings.  Error: #{check.message}"
+      puts "Unable to validate network settings.  Error: #{check.message}"
     else
+      puts "API Settings accepted.  Moving on..."
       break
     end
     
@@ -38,95 +46,42 @@ end
 
 Shove.configure(ymlpath)
 
-# Commander specification
+options = {
+}
 
-program :name, "shove"
-program :version, Shove::Version
-program :description, "CLI for the shove.io push platform"
-program :help, "Author", "Dan Simpson <dan@shove.io>"
-program :formatter, :compact
-
-command :stream do |c|
-  c.syntax = "shove stream channel"
-  c.example "Streams the default channel", "shove stream default"
-  c.description = "Stream all data on a given channel to the console"
-  c.action do |args, opts|
-    if args.empty?
-      say_invalid c
-    else
-      EM.run do
-        Shove.stream(args.first) { |m| 
-          puts m[:channel]
-          puts m[:event]
-          puts m[:to] # this will either be empty or self
-          puts m[:from] # message sender
-          puts m[:data] # the payload
-          puts "============"
-        }
-      end
-    end
-  end
-end
-alias_command :subscribe, :stream
-
-command :broadcast do |c|
-  c.syntax = "shove broadcast channel event data"
-  c.example "Broadcast x,y coordinates on the grid channel", "shove broadcast grid coords '1522,234'"
-  c.description = "Broadcast event and data to all subscribers of a given channel"
-  c.action do |args, opts|
-    if args.length != 3
-      say_invalid c
-    else
-      say "Broadcasting on channel #{args.first}"
-      Shove.broadcast(*args) do |response|
-        say response.message
-      end
-    end
-  end
-end
-
-command :direct do |c|
-  c.syntax = "shove direct user event data"
-  c.example "Send a message to user with id 9812737890", "shove direct 9812737890 message 'Your account expires in 2 minutes'"
-  c.description = "Send a message directly to a specific shove subscriber"
-  c.action do |args, opts|
-    if args.length != 3
-      say_invalid c
-    else
-      say "Sending data directly to user #{args.first}"
-      Shove.direct(*args) do |response|
-        say response.message
-      end
-    end
-  end
-end
-
-command :authorize do |c|
-  c.syntax = "shove authorize user channel"
-  c.example "Authorize user 9812737890 access to channel internal-bus", "shove authorize 9812737890 internal-bus"
-  c.description = "Authorize a pending channel subscription.  Only required for private channels."
-  c.action do |args, opts|
-    if args.length != 2
-      say_invalid c
-    else
-      say "Authorizing user #{args.first} on channel #{args.last}"
-      Shove.authorize(*args) do |response|
-        say response.message
-      end
-    end
-  end
+ARGV.options do |o|
+  o.on("-h", "--help") { command = "help" }
+  o.on("-v", "--version") { options[:command] = "version" }
+  o.parse!
 end
 
 
-def say_invalid cmd
-  puts "Invalid #{cmd.name} command. Syntax: #{cmd.syntax}"
-  unless cmd.examples.empty?
-    puts "Examples"
-    cmd.examples.each do |ex|
-      puts "---------"
-      puts ex.first
-      puts ex.last
-    end
-  end
+begin
+  args = ARGV.dup
+  ARGV.clear
+  command = args.shift || options[:command]
+  raise Exception unless command && Shove.respond_to?(command)
+  puts Shove.send(command, *args).to_s
+
+rescue Exception => ex
+  abort File.read(__FILE__).split("__END__").last
 end
 
+__END__
+Usage: shove command
+       shove broadcast channel event data
+
+OPTIONS
+
+  -h, --help
+    Show this message
+
+COMMANDS
+
+  broadcast       Broadcasts a message to your network
+
+  hosts           List available hosts for your network
+
+  direct          Send a message directly to a user
+
+  authorize       Authorize a channel subscription

@@ -44,7 +44,7 @@ module Shove
       end
     end
     
-    # fetch a list of hosts for streaming websockets and comet
+    # fetch a list of node names for streaming websockets and comet
     def hosts
       Request.new("#{uri}/hosts").get do |response|
         return response

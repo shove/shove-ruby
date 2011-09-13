@@ -24,5 +24,13 @@ module Shove
       parse
     end
 
+    def to_s
+      result = ""
+      result << "Error! " if error?
+      result << message if message
+      result << status
+      result
+    end
+
   end
 end

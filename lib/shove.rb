@@ -14,7 +14,7 @@ require "yaml"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = 0.60
+  Version = "0.7"
   
   class << self
   
@@ -65,10 +65,14 @@ module Shove
       client.validate
     end
     
-    # fetch the available stream hosts
+    # fetch the available stream nodes
     # for this network.
     def hosts
       client.hosts
+    end
+
+    def version
+      Version
     end
     
     # act as a stream client.  requires EM
@@ -89,7 +93,7 @@ module Shove
       end
       
       uid  = ""
-      http = EventMachine::HttpRequest.new("ws://ws-#{hostnames.first}.shove.io/#{config[:network]}").get :timeout => 0
+      http = EventMachine::HttpRequest.new("ws://#{hostnames.first}.shove.io/#{config[:network]}").get :timeout => 0
       
       http.errback {
         block.call("Connection Error")

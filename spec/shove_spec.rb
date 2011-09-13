@@ -19,7 +19,7 @@ describe Shove do
     response.error?.should == false
   end
   
-  it "should get a set of hosts for the network" do
+  it "should get a set of nodes for the network" do
     response = Shove.hosts
     response.status.should == 200
   end

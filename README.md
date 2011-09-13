@@ -1,6 +1,6 @@
 #shover
 
-* The official ruby gem for shove.io's REST API
+* The official ruby gem for shove.io's HTTP API
 
 ##Install Step 1
 
@@ -16,8 +16,7 @@
   
     Shove.configure(
       :network => "network",
-      :key => "apikey",
-      :cluster => "cluster"
+      :key => "apikey"
     )
 
 ##Broadcasting
