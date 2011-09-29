@@ -1,14 +1,14 @@
 module Shove
-  class Client
+  class Publisher
 
     # create an API client
-    # +network+ the network id
+    # +app+ the app id
     # +key+ the api access key
     # +opts+ hash with a few options, such as:
     # :secure true or false
     # :host leave as default unless you have a dedicated cluster
     def initialize opts={}
-      @network = opts[:network]
+      @app = opts[:app]
       @secure = opts[:secure] || false
       @host = opts[:host] || "api.shove.io"
       @port = opts[:port] || (@secure ? 443 : 80)
@@ -40,21 +40,19 @@ module Shove
     # validate current API settings
     def validate
       Request.new("#{uri}/validate").post do |response|
-        return response
+        return !response.error?
       end
     end
     
     # fetch a list of node names for streaming websockets and comet
     def hosts
-      Request.new("#{uri}/hosts").get do |response|
-        return response
-      end
+      Request.new("#{uri}/hosts").exec_sync(:get).parse
     end
         
     protected
     
     def uri
-      (@secure ? "https" : "http") + "://#{@host}:#{@port}/#{@network}"
+      (@secure ? "https" : "http") + "://#{@host}:#{@port}/#{@app}"
     end
     
   end

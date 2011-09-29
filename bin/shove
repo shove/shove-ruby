@@ -4,7 +4,6 @@ $:.unshift File.dirname(__FILE__) + "/../lib"
 
 require "optparse"
 require "shove"
-require "pp"
 
 ymlpath = File.expand_path("~/.shove.yml") 
 

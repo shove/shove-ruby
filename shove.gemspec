@@ -9,7 +9,7 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   
   s.add_dependency("em-http-request", "= 0.3.0")
-  s.add_dependency("commander", ">= 4.0.3")
+  s.add_dependency("em-websocket-client", "= 0.1")
   s.add_dependency("yajl-ruby", ">= 0.8.1")
   
   s.bindir = "bin"

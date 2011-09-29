@@ -11,17 +11,18 @@ describe Shove do
   end
 
   it "should have config" do
-    Shove.config[:network].should == "test"
+    Shove.config[:app].should == "test"
+    Shove.config[:key].should == "test"
   end
   
   it "should be able to authorize with the server" do
-    response = Shove.validate
-    response.error?.should == false
+    valid = Shove.validate
+    valid.should == true
   end
-  
+    
   it "should get a set of nodes for the network" do
-    response = Shove.hosts
-    response.status.should == 200
+    hosts = Shove.hosts
+    hosts.size.should > 0
   end
   
   it "should be able to broadcast a message" do
@@ -32,17 +33,38 @@ describe Shove do
     
   it "should be able to broadcast a message with EM" do
     EM.run do
-    
-      ##
-      # Setup stream and capture for validation
-      ##
-    
       Shove.broadcast("default", "event", "test2") do |response|
         response.error?.should == false
       end
       
       EM.add_timer(0.2) do
-          EM.stop
+        EM.stop
+      end
+    end
+  end
+  
+  
+  it "should stream like a boss" do
+    EM.run do
+    
+      messages = []
+      
+      subscriber = Shove.subscriber
+      subscriber.connect
+      
+      subscriber.on("default", "tev") do |msg|
+        messages << msg
+      end
+      
+      EM.add_timer(0.2) do
+        Shove.broadcast("default", "tev", "test") do |response|
+          response.error?.should == false
+        end
+      end
+      
+      EM.add_timer(0.5) do
+        messages.size.should == 1
+        EM.stop
       end
     end
   end

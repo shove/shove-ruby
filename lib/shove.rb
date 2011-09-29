@@ -3,6 +3,7 @@ $:.unshift File.dirname(__FILE__)
 require "rubygems"
 require "net/http"
 require "em-http-request"
+require "em-websocket-client"
 require "yajl"
 require "yaml"
 
@@ -18,7 +19,7 @@ module Shove
   
   class << self
   
-    attr_accessor :config, :client
+    attr_accessor :config
     
     # configure shover
     # +settings+ the settings for the created client as 
@@ -32,8 +33,16 @@ module Shove
       else
         raise "Unsupported configuration type"
       end
-
-      self.client = Client.new(config)
+    end
+    
+    # build a Publisher object
+    def publisher
+      Publisher.new(config)
+    end
+    
+    # build a subscriber object
+    def subscriber
+      Subscriber.new(config, hosts)
     end
     
     # broadcast a message
@@ -41,7 +50,7 @@ module Shove
     # +event+ the event to trigger
     # +message+ the message to send, UTF-8 encoded kthx
     def broadcast channel, event, message, &block
-      client.broadcast channel, event, message, &block
+      publisher.broadcast channel, event, message, &block
     end
     
     # direct a message to a specific user
@@ -49,26 +58,26 @@ module Shove
     # +event+ the event to trigger
     # +message+ the message to send, UTF-8 encoded kthx
     def direct uid, event, message, &block
-      client.direct uid, event, message, &block
+      publisher.direct uid, event, message, &block
     end
     
     # authorize a user on a private channel
     # +uid+ the users id
     # +channel+ the channel to authorize them on
     def authorize uid, channel="*", &block
-      client.authorize uid, channel, &block
+      publisher.authorize uid, channel, &block
     end
     
     # validate network settings
     # used for the CLI
     def validate
-      client.validate
+      publisher.validate
     end
     
     # fetch the available stream nodes
     # for this network.
     def hosts
-      client.hosts
+      publisher.hosts
     end
 
     def version
@@ -77,57 +86,23 @@ module Shove
     
     # act as a stream client.  requires EM
     # +channel+ the channel to stream
-    def stream channel, &block
+    def stream channel, event, &block
       
       unless EM.reactor_running?
         puts "You can stream when running in an Eventmachine event loop.  EM.run { #code here }"
         exit
       end
       
-      ## Fetch hosts
-      hostnames = hosts
-      
-      if hostnames.empty?
-        puts "Error fetching hosts for network #{config[:network]}"
-        exit
-      end
-      
-      uid  = ""
-      http = EventMachine::HttpRequest.new("ws://#{hostnames.first}.shove.io/#{config[:network]}").get :timeout => 0
-      
-      http.errback {
-        block.call("Connection Error")
-      }
-      
-      http.callback {
-        block.call("Connected")
-        http.send("#{channel}!$subscribe!!!")
-      }
-
-      http.stream { |msg|
-
-        parts = msg.split "!"
-        
-        case parts[1]
-        when "$identity"
-          uid = parts.last
-        when "$unauthorized"
-          Shove.authorize uid, channel
-        end
-        
-        block.call({
-          :channel => parts[0],
-          :event => parts[1],
-          :to => parts[2],
-          :from => parts[3],
-          :data => parts[4]
-        })
-      }
+      sub = subscriber
+      sub.connect
+      sub.channel(channel).on(channel, "*", block)
 
     end
   end
 end
 
-require "shove/client"
+require "shove/channel"
+require "shove/publisher"
+require "shove/subscriber"
 require "shove/request"
 require "shove/response"
