@@ -1,5 +1,5 @@
 module Shove
-  class Publisher
+  class Control
 
     # create an API client
     # +app_id+ the app id
@@ -12,7 +12,7 @@ module Shove
       @app_key = opts[:app_key]
       
       unless @app_id && @app_key
-        raise ShoveExcepton.new("App ID and App Key are required for publishing")
+        raise ShoveExcepton.new("App ID and App Key are required for control")
       end
       
       @secure = opts[:secure] || false
@@ -20,20 +20,23 @@ module Shove
       @port = opts[:port] || (@secure ? 443 : 80)
     end
     
-    # publish a message
-    # +channel+ the channel to broadcast on
-    # +event+ the event to trigger
-    # +message+ the message to send, UTF-8 encoded kthx
-    def publish channel, event, message, &block
-      Request.new("#{uri}/publish/#{channel}/#{event}", @app_key).post(message, &block)
+    # authorize a user on a private channel
+    # +uid+ the users id
+    # +channel+ the channel to authorize them on
+    def authorize uid, channel="*", &block
+      Request.new("#{uri}/authorize/#{channel}/#{uid}", @app_key).post(&block)
     end
     
-    # direct a message to a specific user
-    # +uid+ the users id
-    # +event+ the event to trigger
-    # +message+ the message to send, UTF-8 encoded kthx
-    def direct uid, event, message, &block
-      Request.new("#{uri}/direct/#{event}/#{uid}", @app_key).post(message, &block)
+    # validate current API settings
+    def validate
+      Request.new("#{uri}/validate", @app_key).post do |response|
+        return !response.error?
+      end
+    end
+    
+    # fetch a list of node names for streaming websockets and comet
+    def hosts
+      Request.new("#{uri}/hosts").exec_sync(:get).parse
     end
         
     protected

@@ -11,8 +11,8 @@ describe Shove do
   end
 
   it "should have config" do
-    Shove.config[:app].should == "test"
-    Shove.config[:key].should == "test"
+    Shove.config[:app_id].should == "test"
+    Shove.config[:app_key].should == "test"
   end
   
   it "should be able to authorize with the server" do
@@ -26,18 +26,18 @@ describe Shove do
   end
   
   it "should be able to broadcast a message" do
-    Shove.broadcast("default", "event", "test") do |response|
+    Shove.publish("default", "event", "test") do |response|
       response.error?.should == false
     end
   end
     
   it "should be able to broadcast a message with EM" do
     EM.run do
-      Shove.broadcast("default", "event", "test2") do |response|
+      Shove.publish("default", "event", "test2") do |response|
         response.error?.should == false
       end
       
-      EM.add_timer(0.2) do
+      EM.add_timer(1) do
         EM.stop
       end
     end
@@ -56,13 +56,13 @@ describe Shove do
         messages << msg
       end
       
-      EM.add_timer(0.2) do
-        Shove.broadcast("default", "tev", "test") do |response|
+      EM.add_timer(0.5) do
+        Shove.publish("default", "tev", "test") do |response|
           response.error?.should == false
         end
       end
       
-      EM.add_timer(0.5) do
+      EM.add_timer(1) do
         messages.size.should == 1
         EM.stop
       end

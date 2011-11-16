@@ -2,7 +2,7 @@ module Shove
   class Subscriber
   
     def initialize config, hosts
-      @app = config[:app]
+      @app_id = config[:app_id]
       @parser = Yajl::Parser.new(:symbolize_keys => true)
       @hosts = hosts
       @channels = {}
@@ -11,10 +11,10 @@ module Shove
     # Connect to the shove stream server
     def connect
       if @hosts.empty?
-        raise "Error fetching hosts for app #{@app}"
+        raise "Error fetching hosts for app #{@app_id}"
       end
       
-      @socket = EM::WebSocketClient.new("ws://#{host}.shove.io/#{@app}")
+      @socket = EM::WebSocketClient.new("ws://#{host}.shove.io/#{@app_id}")
       @socket.onmessage do |m|
         process Yajl::Parser.parse(m)
       end

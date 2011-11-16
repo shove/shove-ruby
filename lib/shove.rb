@@ -3,7 +3,7 @@ $:.unshift File.dirname(__FILE__)
 require "rubygems"
 require "net/http"
 require "em-http-request"
-require "em-websocket-client"
+require "em-ws-client"
 require "yajl"
 require "yaml"
 
@@ -15,7 +15,9 @@ require "yaml"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "0.7"
+  Version = "1.0.0"
+  
+  class ShoveException < Exception; end
   
   class << self
   
@@ -40,17 +42,22 @@ module Shove
       Publisher.new(config)
     end
     
+    # build a Publisher object
+    def control
+      Control.new(config)
+    end
+    
     # build a subscriber object
     def subscriber
       Subscriber.new(config, hosts)
     end
     
-    # broadcast a message
+    # publish a message
     # +channel+ the channel to broadcast on
     # +event+ the event to trigger
     # +message+ the message to send, UTF-8 encoded kthx
-    def broadcast channel, event, message, &block
-      publisher.broadcast channel, event, message, &block
+    def publish channel, event, message, &block
+      publisher.publish channel, event, message, &block
     end
     
     # direct a message to a specific user
@@ -65,19 +72,19 @@ module Shove
     # +uid+ the users id
     # +channel+ the channel to authorize them on
     def authorize uid, channel="*", &block
-      publisher.authorize uid, channel, &block
+      control.authorize uid, channel, &block
     end
     
     # validate network settings
     # used for the CLI
     def validate
-      publisher.validate
+      control.validate
     end
     
     # fetch the available stream nodes
     # for this network.
     def hosts
-      publisher.hosts
+      control.hosts
     end
 
     def version
@@ -103,6 +110,7 @@ end
 
 require "shove/channel"
 require "shove/publisher"
+require "shove/control"
 require "shove/subscriber"
 require "shove/request"
 require "shove/response"

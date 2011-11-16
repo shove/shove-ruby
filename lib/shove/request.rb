@@ -3,10 +3,11 @@ module Shove
     
     include EventMachine::HttpEncoding
     
-    attr_accessor :url, :headers
+    attr_accessor :url, :key, :headers
     
-    def initialize url
+    def initialize url, key=nil
       self.url = url
+      self.key = key
     end
     
     # HTTP Delete request
@@ -39,7 +40,7 @@ module Shove
         :delete => Net::HTTP::Delete
       }[method].new(uri.path)
       
-      req.basic_auth "", Shove.config[:key]
+      req.basic_auth "", key
 
       res = Net::HTTP.start(uri.host, uri.port) { |http|
         http.request(req, normalize_body(params))
@@ -57,7 +58,7 @@ module Shove
       http = EventMachine::HttpRequest.new(url).send(method, { 
         :body => params,
         :head => {
-          :authorization => ["", Shove.config[:key]]
+          :authorization => ["", key]
         } 
       })
       
