@@ -93,7 +93,7 @@ module Shove
     
     # act as a stream client.  requires EM
     # +channel+ the channel to stream
-    def stream channel, event, &block
+    def debug &block
       
       unless EM.reactor_running?
         puts "You can stream when running in an Eventmachine event loop.  EM.run { #code here }"
@@ -102,7 +102,7 @@ module Shove
       
       sub = subscriber
       sub.connect
-      sub.channel(channel).on(channel, "*", block)
+      sub.debug &block
 
     end
   end

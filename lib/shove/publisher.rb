@@ -1,12 +1,13 @@
 module Shove
   class Publisher
 
-    # create an API client
+    # Create a Publisher
     # +app_id+ the app id
     # +app_key+ the api access key
     # +opts+ hash with a few options, such as:
     # :secure true or false
     # :host leave as default unless you have a dedicated cluster
+    # :port for the port of the host
     def initialize opts={}
       @app_id = opts[:app_id]
       @app_key = opts[:app_key]

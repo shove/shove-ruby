@@ -5,25 +5,26 @@ $:.unshift File.dirname(__FILE__) + "/../lib"
 require "optparse"
 require "shove"
 
-ymlpath = File.expand_path("~/.shove.yml") 
+$ymlpath = File.expand_path("~/.shove.yml") 
 
-# get network and key
-unless FileTest.exist?(ymlpath)
+def configure
 
   def getinput text
     print text
-    gets.strip
+    STDIN.gets.strip
   end
 
   access = {}
   
   loop do
     
-    puts "Please enter your network information."
-    puts "You can find your API access information @ https://shove.io/customer/network/api_access"
+    puts "Please enter your App information."
+    puts "You can find your API access information @ https://shove.io/apps"
     
-    access[:network] = getinput "Enter Network Id: "
-    access[:key] = getinput "Enter Network Key: "
+    access[:app_id] = getinput "Enter App Id: "
+    access[:app_key] = getinput "Enter App Key: "
+    access[:host] = getinput "Enter Host (Blank for default): "
+    access[:port] = getinput "Enter Port (Blank for default): "
 
     Shove.configure access
     
@@ -37,13 +38,18 @@ unless FileTest.exist?(ymlpath)
     
   end
 
-  File.open(ymlpath, "w") do |f|
+  File.open($ymlpath, "w") do |f|
     f << access.to_yaml
   end
-    
+
 end
 
-Shove.configure(ymlpath)
+# get network and key
+unless FileTest.exist?($ymlpath)
+  configure
+end
+
+Shove.configure($ymlpath)
 
 options = {
 }
@@ -54,12 +60,21 @@ ARGV.options do |o|
   o.parse!
 end
 
-
 begin
   args = ARGV.dup
   ARGV.clear
   command = args.shift || options[:command]
   raise Exception unless command && Shove.respond_to?(command)
+
+  if command == "debug"
+    EM.run do
+      puts ["Channel", "Event", "To", "From", "Data"].join(",")
+      Shove.debug do |message|
+        puts [message["channel"], message["event"], message["to"], message["from"], message["data"]].join(",")
+      end
+    end
+  end
+
   puts Shove.send(command, *args).to_s
 
 rescue Exception => ex
@@ -77,10 +92,14 @@ OPTIONS
 
 COMMANDS
 
-  broadcast       Broadcasts a message to your network
+  publish         Broadcasts a message to your network
 
   hosts           List available hosts for your network
 
   direct          Send a message directly to a user
 
   authorize       Authorize a channel subscription
+
+  debug           Logs all messages for a given app
+
+  reconfigure     Reconfigures the default app

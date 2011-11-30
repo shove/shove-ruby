@@ -29,9 +29,7 @@ module Shove
     
     # validate current API settings
     def validate
-      Request.new("#{uri}/validate", @app_key).post do |response|
-        return !response.error?
-      end
+      Request.new("#{uri}/validate", @app_key).post
     end
     
     # fetch a list of node names for streaming websockets and comet
