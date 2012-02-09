@@ -1,7 +1,7 @@
 spec = Gem::Specification.new do |s|
   s.name = "shove"
-  s.version = "1.0.0"
-  s.date = "2011-11-15"
+  s.version = "1.0.1"
+  s.date = "2012-02-08"
   s.summary = "Ruby gem for leveraging shove.io, the web push platform"
   s.email = "dan@shove.io"
   s.homepage = "https://github.com/shove/shove-ruby"
@@ -13,7 +13,6 @@ spec = Gem::Specification.new do |s|
   s.add_dependency("yajl-ruby", ">= 1.1.0")
   s.add_dependency("confstruct", ">= 0.2.1")
   
-
   s.bindir = "bin"
   s.authors = ["Dan Simpson"]
 

@@ -41,17 +41,6 @@ module Shove
         @app = App.new(@config)
       end
     end
-    
-    # catch all for delegating to the primary network
-    def method_missing method, *args
-      if defined? @app
-        if @app.respond_to? method
-          @app.send(method, args)
-        end
-      else
-        raise new ShoveException "You must configure Shove"
-      end
-    end
 
     # fetch a channel by name
     # +name+ the name of the channel
@@ -80,11 +69,7 @@ module Shove
 end
 
 require "shove/app"
-#require "shove/channel"
-
-
 require "shove/client"
-
 require "shove/http/request"
 require "shove/http/response"
 require "shove/http/channel_context"

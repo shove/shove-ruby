@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + "/helper"
 
 describe Shove do
 
-  before do
+  before(:all) do
     Shove.configure do
       app_id "test"
       app_key "test"

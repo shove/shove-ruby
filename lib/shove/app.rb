@@ -54,7 +54,7 @@ module Shove
     # Create a default request object with the base URL
     # +path+ extra path info
     def request path
-        Http::Request.new("#{url}/#{path}", @config)
+      Http::Request.new("#{url}/#{path}", @config)
     end
 
     ####
@@ -62,7 +62,7 @@ module Shove
     # Connect to shove as a client in the current process
     # +id+ optional shove id to supply
     def connect id=nil
-      client = Client.new(id)
+      client = Client.new(self, id)
       client.connect
       client
     end
