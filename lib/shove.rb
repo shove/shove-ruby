@@ -5,6 +5,7 @@ require "net/http"
 require "em-http-request"
 require "em-ws-client"
 require "yajl"
+require "confstruct"
 require "yaml"
 
 ##
@@ -15,102 +16,76 @@ require "yaml"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "1.0.0"
+  Version = "1.0.1"
   
   class ShoveException < Exception; end
   
   class << self
-  
-    attr_accessor :config
-    
+
+    attr_accessor :config, :app
+
     # configure shover
     # +settings+ the settings for the created client as 
     # a string for a yaml file, or as a hash
-    def configure settings
-      if settings.kind_of? String
-        self.config = YAML.load_file(settings)
-        self.config
-      elsif settings.kind_of? Hash
-        self.config = settings
-      else
-        raise "Unsupported configuration type"
+    def configure &block
+
+      unless defined? @config
+        @config = Confstruct::Configuration.new do
+          api_url "https://api.shove.io/"
+        end
+      end
+
+      @config.configure &block
+
+      unless defined? @app
+        @app = App.new(@config)
       end
     end
     
-    # build a Publisher object
-    def publisher
-      Publisher.new(config)
+    # catch all for delegating to the primary network
+    def method_missing method, *args
+      if defined? @app
+        if @app.respond_to? method
+          @app.send(method, args)
+        end
+      else
+        raise new ShoveException "You must configure Shove"
+      end
     end
-    
-    # build a Publisher object
-    def control
-      Control.new(config)
+
+    # fetch a channel by name
+    # +name+ the name of the channel
+    def channel name
+      @app.channel(name)
     end
-    
-    # build a subscriber object
-    def subscriber
-      Subscriber.new(config, hosts)
-    end
-    
-    # publish a message
-    # +channel+ the channel to broadcast on
-    # +event+ the event to trigger
-    # +message+ the message to send, UTF-8 encoded kthx
-    def publish channel, event, message, &block
-      publisher.publish channel, event, message, &block
-    end
-    
-    # direct a message to a specific user
-    # +uid+ the users id
-    # +event+ the event to trigger
-    # +message+ the message to send, UTF-8 encoded kthx
-    def direct uid, event, message, &block
-      publisher.direct uid, event, message, &block
-    end
-    
-    # authorize a user on a private channel
-    # +uid+ the users id
-    # +channel+ the channel to authorize them on
-    def authorize uid, channel="*", &block
-      control.authorize uid, channel, &block
+
+    # fetch a client by id
+    def client id
+      @app.client(id)
     end
     
     # validate network settings
     # used for the CLI
-    def validate
-      control.validate
+    def valid?
+      @app.valid?
     end
     
     # fetch the available stream nodes
     # for this network.
     def hosts
-      control.hosts
+      @app.hosts
     end
 
-    def version
-      Version
-    end
-    
-    # act as a stream client.  requires EM
-    # +channel+ the channel to stream
-    def debug &block
-      
-      unless EM.reactor_running?
-        puts "You can stream when running in an Eventmachine event loop.  EM.run { #code here }"
-        exit
-      end
-      
-      sub = subscriber
-      sub.connect
-      sub.debug &block
-
-    end
   end
 end
 
-require "shove/channel"
-require "shove/publisher"
-require "shove/control"
-require "shove/subscriber"
-require "shove/request"
-require "shove/response"
+require "shove/app"
+#require "shove/channel"
+
+
+require "shove/client"
+
+require "shove/http/request"
+require "shove/http/response"
+require "shove/http/channel_context"
+require "shove/http/client_context"
