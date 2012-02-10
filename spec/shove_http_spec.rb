@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + "/helper"
-require "pp"
 
-describe Shove do
+describe Shove:Http do
 
   before(:all) do
     Shove.configure do

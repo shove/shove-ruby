@@ -23,14 +23,12 @@ def configure
     
     access[:app_id] = getinput "Enter App Id: "
     access[:app_key] = getinput "Enter App Key: "
-    access[:host] = getinput "Enter Host (Blank for default): "
-    access[:port] = getinput "Enter Port (Blank for default): "
+    access[:api_url] = getinput "Enter Host (Blank for default): "
 
     Shove.configure access
-    
-    check = Shove.validate
-    if check.status >= 400
-      puts "Unable to validate network settings.  Error: #{check.message}"
+
+    if Shove.valid?
+      puts "Unable to validate app settings.  Error: #{check.message}"
     else
       puts "API Settings accepted.  Moving on..."
       break
@@ -57,6 +55,15 @@ options = {
 ARGV.options do |o|
   o.on("-h", "--help") { command = "help" }
   o.on("-v", "--version") { options[:command] = "version" }
+  o.on("-c", "--channel") { |channel| 
+    options[:channel] = channel 
+  }
+  o.on("-u", "--client") { |client|
+    options[:client] = client
+  }
+  o.on("-m", "--message") { |message|
+    options[:message] = message
+  }
   o.parse!
 end
 
@@ -66,16 +73,9 @@ begin
   command = args.shift || options[:command]
   raise Exception unless command && Shove.respond_to?(command)
 
-  if command == "debug"
-    EM.run do
-      puts ["Channel", "Event", "To", "From", "Data"].join(",")
-      Shove.debug do |message|
-        puts [message["channel"], message["event"], message["to"], message["from"], message["data"]].join(",")
-      end
-    end
+  if command == "publish"
+    Shove.channel(options[:channel]).publish(options[:message])
   end
-
-  puts Shove.send(command, *args).to_s
 
 rescue Exception => ex
   abort File.read(__FILE__).split("__END__").last
