@@ -49,7 +49,28 @@ module Shove
     PRESENCE_UNSUBSCRIBED = 0x71
     PRESENCE_LIST = 0x72
 
+    # Represents a callback that can be canceled
+    class Callback
+      
+      def initialize group, block
+        @group = group
+        @block = block
+      end
+
+      def call
+        @block.call
+      end
+
+      def cancel
+        @group.remove self
+      end
+
+    end
+
     class Channel
+
+      attr_accessor :state
+
       # Create a new channel
       # +name+ The name of the channel
       def initialize name
@@ -64,30 +85,23 @@ module Shove
         unless @callbacks.has_key?(event)
           @callbacks[event] = []
         end
-        @callbacks[event] << block
+        @callbacks[event] << Callback.new(@callbacks[event], block)
       end
       
       # Process a message for the channel
       # +message+ the message in question
       def process message
-        process_event("*", message)
-        process_event(message["event"], message)
-      end
-      
-      # Check whether or not an event exists
-      # +event+ the event name
-      def event? event
-        @callbacks.has_key?(event)
-      end
-      
-      private
-      
-      def process_event event, message
-        return unless event?(event)
-        @callbacks[event].each do |cb|
-          cb.call(message)
+        event = message["event"]
+        if @callbacks.has_key?(event)
+          @callbacks[event].each do |cb|
+            cb.call(message)
+          end
         end
       end
+
+      def subscribe
+      end
+
     end
 
     attr_accessor :id
@@ -135,18 +149,13 @@ module Shove
       @events[event] << block
     end
 
-    # Debug the app and receive
-    # all pertinent information and messages
-    # +block+ the block to call when any event occurs
-    def debug &block
-      @socket.send_data(Yajl::Encoder.encode({
-        :event => "debug",
-        :channel => "$"
-      }))
-
-      @socket.onmessage do |m|
-        block.call Yajl::Parser.parse(m)
+    # Fetch a channel
+    # +name+ the name of the channel
+    def channel name
+      unless @channels.has_key?(channel)
+        @channels[name] = Channel.new(name)
       end
+      @channels[name]
     end
     
     private

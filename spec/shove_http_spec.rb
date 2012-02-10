@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + "/helper"
+require "pp"
 
 describe Shove do
 
@@ -9,6 +10,14 @@ describe Shove do
       api_url "http://api.shove.dev:8080"
       ws_url "ws://shove.dev:9000"
     end
+  end
+
+  before do |context|
+    VCR.insert_cassette context.example.metadata[:description_args].first
+  end
+
+  after do |context|
+    VCR.eject_cassette
   end
 
   it "should have a version" do

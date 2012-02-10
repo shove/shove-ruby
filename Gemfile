@@ -5,7 +5,7 @@ gem "rake"
 gem "rspec"
 gem "redcarpet"
 gem "albino"
-gem "vcr"
+gem "vcr", "2.0.0.rc1"
 gem "webmock"
 gem "net-http-spy"
 
