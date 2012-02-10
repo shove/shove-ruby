@@ -13,13 +13,20 @@ module Shove
     # end
     def initialize config=Confstruct::Configuration.new, &block
       @config = config
+      configure &block
+    end
 
+    def configure params={}, &block
+      if params
+        @config.configure params
+      end
+      
       if block
         @config.configure &block
       end
 
       unless @config.app_id && @config.app_key
-        raise ShoveExcepton.new("App ID and App Key are required")
+        raise ShoveException.new("App ID and App Key are required")
       end
     end
 

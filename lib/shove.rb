@@ -27,7 +27,7 @@ module Shove
     # configure shover
     # +settings+ the settings for the created client as 
     # a string for a yaml file, or as a hash
-    def configure &block
+    def configure params=nil, &block
 
       unless defined? @config
         @config = Confstruct::Configuration.new do
@@ -35,10 +35,20 @@ module Shove
         end
       end
 
-      @config.configure &block
+      pp @config
+
+      if params
+        @config.configure params
+      end
+
+      if block
+        @config.configure &block
+      end
 
       unless defined? @app
         @app = App.new(@config)
+      else
+        
       end
     end
 

@@ -4,6 +4,11 @@ $:.unshift File.dirname(__FILE__) + "/../lib"
 
 require "optparse"
 require "shove"
+require "pp"
+
+# require "net-http-spy"
+# Net::HTTP.http_logger_options = {:trace => true, :verbose => true}
+
 
 $ymlpath = File.expand_path("~/.shove.yml") 
 
@@ -23,12 +28,17 @@ def configure
     
     access[:app_id] = getinput "Enter App Id: "
     access[:app_key] = getinput "Enter App Key: "
-    access[:api_url] = getinput "Enter Host (Blank for default): "
+
+    optional_url =  getinput "Enter Host (Blank for default): "
+
+    if optional_url =~ /^http/i
+      access[:api_url] = optional_url
+    end
 
     Shove.configure access
 
     if Shove.valid?
-      puts "Unable to validate app settings.  Error: #{check.message}"
+      puts "Unable to validate app settings."
     else
       puts "API Settings accepted.  Moving on..."
       break
@@ -47,59 +57,84 @@ unless FileTest.exist?($ymlpath)
   configure
 end
 
-Shove.configure($ymlpath)
+Shove.configure YAML.load_file($ymlpath)
 
-options = {
-}
+action  = ARGV[0]
+channel = nil
+client  = nil
+message = nil
 
-ARGV.options do |o|
-  o.on("-h", "--help") { command = "help" }
-  o.on("-v", "--version") { options[:command] = "version" }
-  o.on("-c", "--channel") { |channel| 
-    options[:channel] = channel 
-  }
-  o.on("-u", "--client") { |client|
-    options[:client] = client
-  }
-  o.on("-m", "--message") { |message|
-    options[:message] = message
-  }
-  o.parse!
+OptionParser.new do |o|
+
+  o.banner = "Usage: shove "
+
+  o.on("-h", "--help") do
+    action = "help" 
+  end
+
+  o.on("-v", "--version") do
+    action = "version"
+  end
+
+  o.on("-c", "--channel channel", "the channel to operate on") do |arg| 
+    channel = arg 
+  end
+
+  o.on("-u", "--client client", "the client to operate on") do |arg|
+    client = arg
+  end
+
+  o.on("-m", "--message message", "the message to publish") do |arg|
+    message = arg
+  end
+
+  o.parse!(ARGV)
 end
 
 begin
-  args = ARGV.dup
-  ARGV.clear
-  command = args.shift || options[:command]
-  raise Exception unless command && Shove.respond_to?(command)
 
-  if command == "publish"
-    Shove.channel(options[:channel]).publish(options[:message])
+  case action
+  when "version"
+    puts "shove version #{Shove::Version}"
+  when "publish"
+
+    errors = []
+    errors << "channel not defined" unless channel
+    errors << "message not defined" unless message
+
+    if errors.empty?
+      Shove.channel(channel).publish(message) do |r|
+        if r.error? 
+          puts "Error: #{r.message}"
+        else
+          puts "Published"
+        end
+      end
+    else
+      puts "Errors: #{errors.join(",")}"
+    end
+  else
+    puts File.read(__FILE__).split("__END__").last
   end
+
 
 rescue Exception => ex
   abort File.read(__FILE__).split("__END__").last
 end
 
 __END__
-Usage: shove command
-       shove broadcast channel event data
+Usage: shove action [options]
 
-OPTIONS
 
+Options
   -h, --help
     Show this message
 
-COMMANDS
+Actions
+  publish         publish a message to the app
+                  example: shove publish -c chan -m "Hello"
 
-  publish         Broadcasts a message to your network
-
-  hosts           List available hosts for your network
-
-  direct          Send a message directly to a user
-
-  authorize       Authorize a channel subscription
-
-  debug           Logs all messages for a given app
-
-  reconfigure     Reconfigures the default app
+  hosts           List available hosts for your app
+  watch           Watch the messages on a given channel
+  apps            List your known apps
+  apps:use        Use a particular app
