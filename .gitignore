@@ -1,4 +1,5 @@
 shove.yml
 example.rb
 Gemfile.lock
+README.html
 *.gem

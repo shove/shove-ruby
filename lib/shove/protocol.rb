@@ -1,0 +1,53 @@
+module Shove
+  module Protocol
+
+    ERROR = 0x00
+
+    # Connection
+    CONNECT = 0x01
+    CONNECT_GRANTED = 0x02
+    CONNECT_DENIED = 0x03
+    DISCONNECT = 0x04
+    DISCONNECT_COMPLETE = 0x06
+
+    # Subscribe Ops
+    SUBSCRIBE = 0x10 
+    SUBSCRIBE_GRANTED = 0x11
+    SUBSCRIBE_DENIED = 0x12
+    UNSUBSCRIBE = 0x13
+    UNSUBSCRIBE_COMPLETE = 0x14
+
+    # Publish Ops
+    PUBLISH = 0x20 
+    PUBLISH_DENIED = 0x21
+    PUBLISH_GRANTED = 0x22
+
+    # Authorize Ops
+    GRANT_PUBLISH = 0x30 
+    GRANT_SUBSCRIBE = 0x31
+    GRANT_CONNECT = 0x32
+    GRANT_CONTROL = 0x33
+
+    # Deny Ops
+    DENY_PUBLISH = 0x40 
+    DENY_SUBSCRIBE = 0x41
+    DENY_CONNECT = 0x42
+    DENY_CONTROL = 0x43
+
+    # Log Ops
+    LOG = 0x50 
+    LOG_STARTED = 0x51
+    LOG_DENIED = 0x52
+
+    # Self authorize
+    AUTHORIZE = 0x60
+    AUTHORIZE_COMPLETE = 0x61
+    AUTHORIZE_DENIED = 0x62
+
+    # Presence Ops
+    PRESENCE_SUBSCRIBED = 0x70
+    PRESENCE_UNSUBSCRIBED = 0x71
+    PRESENCE_LIST = 0x72
+
+  end
+end

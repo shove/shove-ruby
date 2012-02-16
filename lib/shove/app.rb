@@ -69,7 +69,7 @@ module Shove
     # Connect to shove as a client in the current process
     # +id+ optional shove id to supply
     def connect id=nil
-      client = Client.new(self, id)
+      client = Client::Connection.new(self, id)
       client.connect
       client
     end

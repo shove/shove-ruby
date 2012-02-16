@@ -22,3 +22,40 @@ RSpec.configure do |c|
   # in RSpec 3 this will no longer be necessary.
   c.treat_symbols_as_metadata_keys_with_true_values = true
 end
+
+# Queue for goodies
+$queue = []
+
+# Backdoor for sending data into the clients
+# processing code... 
+$backdoor = nil
+def backdoor message
+  $backdoor.call(Yajl::Encoder.encode(message))
+end
+
+# Mock Mock
+module EM
+  class WebSocketClient
+
+    def initialize url, origin=nil
+    end
+
+    def connect
+    end
+
+    def onopen &block
+      @onopen = block
+    end
+
+    def onmessage &block
+      @onmessage = block
+      $backdoor = block
+      @onopen.call # called
+    end
+
+    def send_data data
+      $queue << Yajl::Parser.parse(data)
+    end
+
+  end
+end

@@ -106,9 +106,11 @@ client.on("connect") do
   # connected
 end
 
-client.on("connect_denied") do |error|
+client.on("connect_denied") do |id|
   # Silly but good example:
-  Shove.grant_connect(client.id)
+  Shove.client(id).grant_connect do |response|
+    # magic
+  end
 end
 
 client.on("disconnect") do
@@ -118,50 +120,64 @@ client.on("error") do |error|
 end
 ```
 
-### Working With Channels
+### Working With Channels - Subscribing
 
 ```ruby
-# subscribe to a channel
+client = Shove.app.connect
+
+# subscribe to a channel, or get's it's
+# context
 channel = client.channel("channel")
 
-# subscribe to a channel and call the block
-# when a message is received
+channel.on("subscribe") do
+  # channel is subscribed
+end
+
+channel.on("subscribe_denied") do
+  # not permitted, request auth from
+  # another service
+  Shove.client(client.id).grant_subscribe(channel.name)
+end
+
+# bind the message event to a block
+# callback
 channel.on("message") do |msg|
 end
 
-# if you want to cancel a callback
+# if you want to cancel a callback, store
+# it's binding
 binding = channel.on("message") do |msg|
 end
 
-# removes the callback
 binding.cancel
 
+# handle events on the direct channel
+client.channel("direct").on("message") do |msg|
+  # handle direct message
+end
+```
+
+### Channels - Unsubscribing
+
+```ruby
+channel.on("unsubscribe_complete") do
+end
+
+channel.unsubscribe
+```
+
+### Channels - Publishing
+
+```ruby
 # publish a simple string
 channel.publish("hi!")
 
 # publish json
 channel.publish(obj.to_json)
-
-# unsubscribe from the channel
-channel.unsubscribe
-
-# bind a callback to the subscribe event
-channel.on("subscribe") do |channel|
-  # subscribed
-end
-
-# handle unsubscribe
-channel.on("unsubscribe") do |channel|
-  # unsubscribed
-end
 ```
-
-
 
 Using the Command Line
 ----------------------
-
-
 
 
 [0]: http://shove.io/customer/network/api_access

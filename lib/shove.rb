@@ -34,9 +34,7 @@ module Shove
           api_url "https://api.shove.io/"
         end
       end
-
-      pp @config
-
+      
       if params
         @config.configure params
       end
@@ -79,7 +77,10 @@ module Shove
 end
 
 require "shove/app"
-require "shove/client"
+require "shove/protocol"
+require "shove/client/connection"
+require "shove/client/channel"
+require "shove/client/callback"
 require "shove/http/request"
 require "shove/http/response"
 require "shove/http/channel_context"

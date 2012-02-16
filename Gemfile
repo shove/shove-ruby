@@ -10,4 +10,3 @@ gem "webmock"
 gem "net-http-spy"
 
 gemspec
-
