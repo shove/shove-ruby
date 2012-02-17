@@ -16,7 +16,7 @@ require "confstruct"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "1.0.1"
+  Version = "1.0.2"
   
   class ShoveException < Exception; end
   

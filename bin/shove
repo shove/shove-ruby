@@ -113,6 +113,10 @@ begin
         end
 
         channel = client.channel(channel)
+        channel.on("subscribe") do
+          puts "Subscribed"
+        end
+
         channel.on("message") do |msg|
           puts "#{Time.now}: #{msg}"
         end

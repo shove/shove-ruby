@@ -4,7 +4,7 @@ PATH
     shove (1.0.1)
       confstruct (>= 0.2.1)
       em-http-request (>= 1.0.0)
-      em-ws-client (>= 0.1.1)
+      em-ws-client (>= 0.1.2)
       yajl-ruby (>= 1.1.0)
 
 GEM
@@ -25,8 +25,8 @@ GEM
       http_parser.rb (>= 0.5.3)
     em-socksify (0.1.0)
       eventmachine
-    em-ws-client (0.1.1)
-      eventmachine (~> 1.0.0.beta.3)
+    em-ws-client (0.1.2)
+      eventmachine (~> 1.0.0.beta.4)
       state_machine (~> 1.0.2)
     eventmachine (1.0.0.beta.4)
     http_parser.rb (0.5.3)
