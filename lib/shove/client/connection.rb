@@ -16,9 +16,13 @@ module Shove
         @hosts = app.hosts
         @channels = {}
         @events = {}
-
+        @queue = []
         @forcedc = false
         @connected = false
+      end
+
+      def authorize app_key=nil
+        send_data :opcode => AUTHORIZE, :data => (app_key || @config.app_key)
       end
       
       # Connect to the shove stream server
@@ -31,7 +35,10 @@ module Shove
         @socket = EM::WebSocketClient.new(url)
         @socket.onopen do
           @connected = true
-          on_ws_connect
+          send_data :opcode => CONNECT, :data => @id
+          until @queue.empty? do
+            send_data @queue.shift
+          end
         end
         
         @socket.onmessage do |m|
@@ -88,7 +95,11 @@ module Shove
       end
       
       def send_data data
-        @socket.send_data(Yajl::Encoder.encode(data))
+        if @connected
+          @socket.send_data(Yajl::Encoder.encode(data))
+        else
+          @queue << data
+        end
       end
 
       protected
@@ -103,10 +114,6 @@ module Shove
             block.call(*args)
           end
         end
-      end
-
-      def on_ws_connect
-        send_data :opcode => CONNECT, :data => @id
       end
 
       def process message
@@ -143,6 +150,7 @@ module Shove
         when DISCONNECT_COMPLETE
           @closing = true
           emit "disconnecting"
+        when AUTHORIZE_COMPLETE
         else
           #TODO: logger
           puts "Unknown opcode"

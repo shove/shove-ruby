@@ -88,6 +88,12 @@ describe Shove::Client do
     @error.should == "Test Error"
   end
 
+  it "should authorize oneself" do
+    @client = Shove.app.connect
+    @client.authorize("test")
+    $queue.last()["opcode"].should == Shove::Protocol::AUTHORIZE
+  end
+
   it "should create a channel context" do
     @client = Shove.app.connect
     @channel = @client.channel("channel")

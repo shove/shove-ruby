@@ -4,65 +4,13 @@ $:.unshift File.dirname(__FILE__) + "/../lib"
 
 require "optparse"
 require "shove"
-require "pp"
-
-# require "net-http-spy"
-# Net::HTTP.http_logger_options = {:trace => true, :verbose => true}
-
-
-$ymlpath = File.expand_path("~/.shove.yml") 
-
-def configure
-
-  def getinput text
-    print text
-    STDIN.gets.strip
-  end
-
-  access = {}
-  
-  loop do
-    
-    puts "Please enter your App information."
-    puts "You can find your API access information @ https://shove.io/apps"
-    
-    access[:app_id] = getinput "Enter App Id: "
-    access[:app_key] = getinput "Enter App Key: "
-
-    optional_url =  getinput "Enter Host (Blank for default): "
-
-    if optional_url =~ /^http/i
-      access[:api_url] = optional_url
-    end
-
-    Shove.configure access
-
-    if Shove.valid?
-      puts "Unable to validate app settings."
-    else
-      puts "API Settings accepted.  Moving on..."
-      break
-    end
-    
-  end
-
-  File.open($ymlpath, "w") do |f|
-    f << access.to_yaml
-  end
-
-end
-
-# get network and key
-unless FileTest.exist?($ymlpath)
-  configure
-end
-
-Shove.configure YAML.load_file($ymlpath)
 
 action  = ARGV[0]
 channel = nil
 client  = nil
 message = nil
+app     = nil
+app_dir = Shove::AppDirectory.new
 
 OptionParser.new do |o|
 
@@ -74,6 +22,14 @@ OptionParser.new do |o|
 
   o.on("-v", "--version") do
     action = "version"
+  end
+
+  o.on("-l", "--list") do
+    action = "apps"
+  end
+
+  o.on("-a", "--app app", "the app to work with") do |arg|
+    app = arg
   end
 
   o.on("-c", "--channel channel", "the channel to operate on") do |arg| 
@@ -96,7 +52,34 @@ begin
   case action
   when "version"
     puts "shove version #{Shove::Version}"
+  when "apps"
+
+    apps = app_dir.apps
+
+    if apps.empty?
+      puts "No apps found.  Run: shove apps:add"
+    else
+      puts "App Id\t\tApp Key"
+      puts "-----------------------"
+      apps.each_pair do |id,key|
+        puts "#{id}\t\t#{key}"
+      end
+    end
+
+  when "apps:add"
+    app_dir.get_config app
+  when "apps:default"
+    app_dir.default = app
+  when "hosts"
+    Shove.configure(app_dir.get_config(app))
+
+    Shove.hosts.each do |host|
+      puts host
+    end
+
   when "publish"
+
+    Shove.configure(app_dir.get_config(app))
 
     errors = []
     errors << "channel not defined" unless channel
@@ -113,12 +96,42 @@ begin
     else
       puts "Errors: #{errors.join(",")}"
     end
+
+  when "watch"
+
+    Shove.configure(app_dir.get_config(app))
+
+    if channel
+
+      EM.run do
+        client = Shove.connect
+        client.authorize(app_dir.key(app))
+
+        client.on("error") do |error|
+          puts "Watch Error #{error}"
+          EM.stop
+        end
+
+        channel = client.channel(channel)
+        channel.on("message") do |msg|
+          puts "#{Time.now}: #{msg}"
+        end
+      end
+
+    else
+      puts "You must provide the channel with: -c channel_name"
+    end
+        
   else
     puts File.read(__FILE__).split("__END__").last
   end
 
 
 rescue Exception => ex
+
+  puts ex.message
+  puts ex.backtrace
+
   abort File.read(__FILE__).split("__END__").last
 end
 
@@ -136,5 +149,7 @@ Actions
 
   hosts           List available hosts for your app
   watch           Watch the messages on a given channel
-  apps            List your known apps
-  apps:use        Use a particular app
+
+  apps            List known apps
+  apps:default    Use a particular app
+  apps:add        Add a new app

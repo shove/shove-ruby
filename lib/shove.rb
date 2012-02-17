@@ -5,14 +5,14 @@ require "net/http"
 require "em-http-request"
 require "em-ws-client"
 require "yajl"
-require "confstruct"
 require "yaml"
+require "confstruct"
 
 ##
 # Shove
 # 
 # See http://shove.io for an account and client documentation
-# See https://github.com/shove/shover for gem documentation
+# See https://github.com/shove/shove-ruby for gem documentation
 # See https://github.com/shove/shove for client documentation
 module Shove
   
@@ -40,7 +40,7 @@ module Shove
       end
 
       if block
-        @config.configure &block
+        @config.configure(&block)
       end
 
       unless defined? @app
@@ -73,10 +73,17 @@ module Shove
       @app.hosts
     end
 
+    # Connect to the default app with a 
+    # WebSocket connection
+    def connect
+      @app.connect
+    end
+
   end
 end
 
 require "shove/app"
+require "shove/app_directory"
 require "shove/protocol"
 require "shove/client/connection"
 require "shove/client/channel"

@@ -10,7 +10,7 @@ module Shove
       end
 
       def call *args
-        @block.call *args
+        @block.call(*args)
       end
 
       def cancel

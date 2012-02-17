@@ -13,7 +13,7 @@ module Shove
     # end
     def initialize config=Confstruct::Configuration.new, &block
       @config = config
-      configure &block
+      configure(&block)
     end
 
     def configure params={}, &block
@@ -22,7 +22,7 @@ module Shove
       end
       
       if block
-        @config.configure &block
+        @config.configure(&block)
       end
 
       unless @config.app_id && @config.app_key
