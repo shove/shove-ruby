@@ -11,6 +11,8 @@ if ENV["DEBUG"]
   Net::HTTP.http_logger_options = {:trace => true, :verbose => true}
 end
 
+ENV["SHOVE_ENV"] = "development"
+
 VCR.configure do |c|
   c.cassette_library_dir = 'spec/cassettes'
   c.hook_into :webmock
