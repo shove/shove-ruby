@@ -107,12 +107,21 @@ begin
         client = Shove.connect
         client.authorize(app_dir.key(app))
 
+        client.on("connect") do |error|
+          puts "Connected"
+        end
+
         client.on("error") do |error|
           puts "Watch Error #{error}"
           EM.stop
         end
 
         channel = client.channel(channel)
+
+        channel.on("subscribe_denied") do
+          puts "Subscribe Denied"
+        end
+
         channel.on("subscribe") do
           puts "Subscribed"
         end
@@ -120,6 +129,7 @@ begin
         channel.on("message") do |msg|
           puts "#{Time.now}: #{msg}"
         end
+
       end
 
     else

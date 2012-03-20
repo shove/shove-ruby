@@ -43,9 +43,11 @@ module Shove
         
         req.basic_auth "", key
 
-        res = Net::HTTP.start(uri.host, uri.port) { |http|
-          http.request(req, normalize_body(params))
-        }
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = uri.scheme == "https"
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+        res = http.request(req, normalize_body(params))
 
         result = Response.new(res.code, res.body, res.code.to_i >= 400)
         if block_given?
@@ -65,13 +67,17 @@ module Shove
         
         # handle error
         http.errback {
-          block.call(Response.new(http.response_header.status, http.response, true)) 
+          if block
+            block.call(Response.new(http.response_header.status, http.response, true))
+          end
         }
         
         # handle success
         http.callback {
           status = http.response_header.status
-          block.call(Response.new(status, http.response, status >= 400))
+          if block
+            block.call(Response.new(status, http.response, status >= 400))
+          end
         }
       end
       

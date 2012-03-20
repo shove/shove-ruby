@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = "shove"
-  s.version = "1.0.2"
+  s.version = "1.0.3"
   s.date = "2012-02-08"
   s.summary = "Ruby gem for leveraging shove.io, the web push platform"
   s.email = "dan@shove.io"

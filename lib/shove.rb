@@ -2,6 +2,7 @@ $:.unshift File.dirname(__FILE__)
 
 require "rubygems"
 require "net/http"
+require "net/https"
 require "em-http-request"
 require "em-ws-client"
 require "yajl"
@@ -16,7 +17,7 @@ require "confstruct"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "1.0.2"
+  Version = "1.0.3"
   
   class ShoveException < Exception; end
   
@@ -31,7 +32,7 @@ module Shove
 
       unless defined? @config
         @config = Confstruct::Configuration.new do
-          api_url "https://api.shove.io/"
+          api_url "https://api.shove.io"
         end
       end
       

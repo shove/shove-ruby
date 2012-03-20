@@ -24,6 +24,12 @@ module Shove
       def authorize app_key=nil
         send_data :opcode => AUTHORIZE, :data => (app_key || @config.app_key)
       end
+
+      # Enable or disable debugging
+      # +on+ true to enable debugging
+      def debug on=true
+        @debug = on
+      end
       
       # Connect to the shove stream server
       def connect
@@ -89,7 +95,7 @@ module Shove
           if @hosts.empty?
             raise "Error fetching hosts for app #{@app_id}"
           end
-          @url = "ws://#{@hosts.first}.shove.io/#{@config.app_id}"
+          @url = "ws://#{@hosts.first}/#{@config.app_id}"
         end
         @url
       end

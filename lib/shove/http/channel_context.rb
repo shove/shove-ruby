@@ -15,8 +15,8 @@ module Shove
       def publish message, &block
         if @channel == "*"
           raise ShoveException.new("Cannot publish to *")
-        elsif message.size > 8096
-          raise ShoveException.new("Max message size is 8,096 bytes")
+        elsif message.size > 2048
+          raise ShoveException.new("Max message size is 2 KiB")
         end
         @app.request("publish?channel=#{@channel}").post(message, &block)
       end

@@ -17,6 +17,11 @@ module Shove
     end
 
     def configure params={}, &block
+
+      @config.configure do
+        api_url Shove.config.api_url || "https://api.shove.io"
+      end
+
       if params
         @config.configure params
       end
@@ -25,8 +30,8 @@ module Shove
         @config.configure(&block)
       end
 
-      unless @config.app_id && @config.app_key
-        raise ShoveException.new("App ID and App Key are required")
+      unless @config.app_id
+        raise ShoveException.new("App ID required")
       end
     end
 
