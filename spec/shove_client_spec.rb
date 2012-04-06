@@ -192,8 +192,8 @@ describe Shove::Client do
   end
 
   it "should generate a channel key" do
-    key = Shove.channel_key "money", "key"
-    key.should == "e627e0e305c60b6ccb164f8baafdbc8d84f0d032"
+    key = Shove.channel_key "money"
+    key.should == "6f78f2ba414a482fc5c45eb080d8877ddf1fc6ba"
   end
 
   it "should authorize on a channel" do

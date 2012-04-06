@@ -83,14 +83,9 @@ module Shove
 
     # Create a channel key
     # +channel+ the name of the channel
-    def channel_key channel, key=nil
-      if key.nil?
-        key = @config.app_key
-      end
-      digest = Digest::SHA1.hexdigest "#{key}-#{channel}"
+    def channel_key channel
+      @app.channel_key channel
     end
-
-
 
   end
 end

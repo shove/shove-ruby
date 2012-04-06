@@ -69,6 +69,13 @@ module Shove
       Http::Request.new("#{url}/#{path}", @config)
     end
 
+    # Generate a channel key for a client to self authorize
+    # publish and subscribe actions.
+    # +channel+ the name of the channel
+    def channel_key channel
+      Digest::SHA1.hexdigest "#{@config.app_key}-#{channel}"
+    end
+
     ####
 
     # Connect to shove as a client in the current process

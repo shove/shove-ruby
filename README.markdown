@@ -58,6 +58,7 @@ end
 Apps, channels, and clients can be controlled from the HTTP API
 
 Grant a connection to dan@shove.io
+
 ```ruby
 Shove.grant_connect("dan@shove.io") do |response|
   # handle response
@@ -225,6 +226,27 @@ channel.publish("hi!")
 # publish json
 channel.publish(obj.to_json)
 ```
+
+Channel Keys
+------------
+You can generate channel keys which allow clients of
+your shove network to publish and subscribe to specific
+channels.
+
+Example: Create a key for the channel groups:788
+
+```ruby
+key = Shove.channel_key "group:788"
+```
+
+If it's for a particular App, use:
+
+```ruby
+key = app.channel_key "group:788"
+```
+
+Note: if you don't have the app key speficied for the app, the
+channel key generated will not be correct.
 
 Using the Command Line
 ----------------------
