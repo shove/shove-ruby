@@ -18,7 +18,7 @@ require "digest/sha1"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "1.0.4"
+  Version = "1.0.5"
   
   class ShoveException < Exception; end
   
