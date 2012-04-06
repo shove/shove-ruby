@@ -66,6 +66,11 @@ module Shove
         @conn.send_data :opcode => UNSUBSCRIBE, :channel => @name
       end
 
+      # authorize pub/sub on this channel
+      def authorize channel_key
+        @conn.send_data :opcode => AUTHORIZE, :channel => @name, :data => channel_key
+      end
+
       private
 
       def emit event, *args

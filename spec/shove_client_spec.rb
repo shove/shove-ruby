@@ -191,4 +191,22 @@ describe Shove::Client do
     $queue.last()["opcode"].should == Shove::Protocol::PUBLISH
   end
 
+  it "should generate a channel key" do
+    key = Shove.channel_key "money", "key"
+    key.should == "e627e0e305c60b6ccb164f8baafdbc8d84f0d032"
+  end
+
+  it "should authorize on a channel" do
+    @client = Shove.app.connect
+    @channel = @client.channel("channel")
+    @channel.authorize "key"
+
+    item = $queue.last()
+
+    item["opcode"].should == Shove::Protocol::AUTHORIZE
+    item["data"].should == "key"
+    item["channel"].should == "channel"
+
+  end
+
 end

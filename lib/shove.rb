@@ -8,6 +8,7 @@ require "em-ws-client"
 require "yajl"
 require "yaml"
 require "confstruct"
+require "digest/sha1"
 
 ##
 # Shove
@@ -17,7 +18,7 @@ require "confstruct"
 # See https://github.com/shove/shove for client documentation
 module Shove
   
-  Version = "1.0.3"
+  Version = "1.0.4"
   
   class ShoveException < Exception; end
   
@@ -79,6 +80,17 @@ module Shove
     def connect
       @app.connect
     end
+
+    # Create a channel key
+    # +channel+ the name of the channel
+    def channel_key channel, key=nil
+      if key.nil?
+        key = @config.app_key
+      end
+      digest = Digest::SHA1.hexdigest "#{key}-#{channel}"
+    end
+
+
 
   end
 end
