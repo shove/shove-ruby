@@ -9,7 +9,7 @@ Installation
 gem install shove
 ```
 
-Grab your App ID and App Key from shove at [https://shove.io/apps][0]
+Grab your App ID and App Key from shove at [https://shove.io][0]
 
 Configuring Shove
 -----------------
@@ -227,7 +227,7 @@ channel.publish("hi!")
 channel.publish(obj.to_json)
 ```
 
-Channel Keys
+Channel Keys<a id="channel_keys"></a>
 ------------
 You can generate channel keys which allow clients of
 your shove network to publish and subscribe to specific
@@ -245,7 +245,7 @@ If it's for a particular App, use:
 key = app.channel_key "group:788"
 ```
 
-Note: if you don't have the app key speficied for the app, the
+Note: if you don't have the app key specified for the app, the
 channel key generated will not be correct.
 
 Using the Command Line
@@ -281,5 +281,5 @@ Watch all activity on a channel
 shove watch -c chan
 ```
 
-[0]: https://shove.io/apps
-[1]: http://shove.io/documentation/cli
+[0]: https://shove.io
+[1]: https://shove.io
