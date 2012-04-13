@@ -13,12 +13,12 @@ require "digest/sha1"
 ##
 # Shove
 # 
-# See http://shove.io for an account and client documentation
+# See https://shove.io for an account and client documentation
 # See https://github.com/shove/shove-ruby for gem documentation
-# See https://github.com/shove/shove for client documentation
+# See https://github.com/shove/shove for js client documentation
 module Shove
   
-  Version = "1.0.5"
+  Version = "1.0.6"
   
   class ShoveException < Exception; end
   

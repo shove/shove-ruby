@@ -1,4 +1,3 @@
-
 module Shove
 
   # Used for storing and accessing shove credentials

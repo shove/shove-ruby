@@ -105,8 +105,10 @@ describe Shove::Client do
   it "should subscribe to a channel" do
     @client = Shove.app.connect
     @channel = @client.channel("channel")
-    @message = $queue.last
-    @message["opcode"].should == Shove::Protocol::SUBSCRIBE
+    $queue.last["opcode"].should_not == Shove::Protocol::SUBSCRIBE
+    @channel.on("message") do
+    end
+    $queue.last["opcode"].should == Shove::Protocol::SUBSCRIBE
   end
 
   it "should get a subscribe granted event" do
@@ -207,6 +209,14 @@ describe Shove::Client do
     item["data"].should == "key"
     item["channel"].should == "channel"
 
+    @triggered = false
+    @channel.on("authorize_complete") do
+      @triggered = true
+    end
+
+    backdoor :opcode => Shove::Protocol::AUTHORIZE_COMPLETE, :channel => "channel"
+
+    @triggered.should == true
   end
 
 end

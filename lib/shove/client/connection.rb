@@ -81,9 +81,6 @@ module Shove
       def channel name
         unless @channels.key?(name)
           @channels[name] = Channel.new(name, self)
-          if name != "direct"
-            @channels[name].subscribe
-          end
         end
         @channels[name]
       end
@@ -157,8 +154,18 @@ module Shove
           @closing = true
           emit "disconnecting"
         when AUTHORIZE_COMPLETE
+          if @channels.key?(channel)
+            @channels[channel].process(message)
+          else
+            emit "authorize_complete"
+          end
+        when AUTHORIZE_DENIED
+          if @channels.key?(channel)
+            @channels[channel].process(message)
+          else
+            emit "authorize_denied"
+          end
         else
-          #TODO: logger
           puts "Unknown opcode"
         end
 

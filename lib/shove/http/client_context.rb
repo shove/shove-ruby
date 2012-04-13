@@ -13,7 +13,7 @@ module Shove
       # +message+ the message to publish
       # +block+ called on response
       def publish message, &block
-        @app.request("publish?channel=direct:#{@id}").post(message, &block)
+        @app.request("publish?channel=direct:#{@id}").post(message.to_s, &block)
       end
 
       # grant connection to client

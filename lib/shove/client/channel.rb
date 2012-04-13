@@ -10,8 +10,9 @@ module Shove
       # +name+ The name of the channel
       def initialize name, conn
         @conn = conn
-        @name = name
+        @name = name.to_s
         @callbacks = {}
+        @subscribe_sent = false
       end
 
       # Bind a block to an event
@@ -23,6 +24,11 @@ module Shove
         end
         result = Callback.new(@callbacks[event], block)
         @callbacks[event] << result
+
+        if @name != "direct" && !@subscribe_sent
+          subscribe
+        end
+
         result
       end
       
@@ -46,6 +52,10 @@ module Shove
         when UNSUBSCRIBE_COMPLETE
           emit("unsubscribe")
           @callbacks.clear
+        when AUTHORIZE_DENIED
+          emit("authorize_denied")
+        when AUTHORIZE_COMPLETE
+          emit("authorize_complete")
         end
 
       end
@@ -59,6 +69,7 @@ module Shove
       # subscribe to the channel, by sending to the remote
       def subscribe
         @conn.send_data :opcode => SUBSCRIBE, :channel => @name
+        @subscribe_sent = true
       end
 
       # unsubscribe from the channel
@@ -68,7 +79,7 @@ module Shove
 
       # authorize pub/sub on this channel
       def authorize channel_key
-        @conn.send_data :opcode => AUTHORIZE, :channel => @name, :data => channel_key
+        @conn.send_data :opcode => AUTHORIZE, :channel => @name, :data => channel_key.to_s
       end
 
       private
