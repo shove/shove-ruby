@@ -227,7 +227,7 @@ channel.publish("hi!")
 channel.publish(obj.to_json)
 ```
 
-Channel Keys<a id="channel_keys"></a>
+Channel Keys<a name="channel_keys"></a>
 ------------
 You can generate channel keys which allow clients of
 your shove network to publish and subscribe to specific
