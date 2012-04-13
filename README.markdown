@@ -169,6 +169,7 @@ Connect event:
 client.on("connect") do
   # Connected!
 end
+```
 
 Disconnect event:
 
@@ -184,7 +185,6 @@ Error event:
 client.on("error") do |error|
   log.error "Shove error: #{error}"
 end
-```
 ```
 
 Connect denied event: (don't forget to authorize)
