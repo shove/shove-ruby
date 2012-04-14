@@ -39,17 +39,6 @@ module Shove
         end
 
         @socket = EM::WebSocketClient.new(url)
-        @socket.onopen do
-          @connected = true
-          send_data :opcode => CONNECT, :data => @id
-          until @queue.empty? do
-            send_data @queue.shift
-          end
-        end
-        
-        @socket.onmessage do |m|
-          process Yajl::Parser.parse(m)
-        end
 
         @socket.onclose do
           @connected = false
@@ -57,12 +46,25 @@ module Shove
             reconnect
           end
         end
+
+        @socket.onopen do
+          @connected = true
+          send_data :opcode => CONNECT, :data => @id
+          until @queue.empty? do
+            send_data @queue.shift
+          end
+        end
+
+        @socket.onmessage do |m, binary|
+          process(Yajl::Parser.parse(m))
+        end
+
       end
       
       # Disconnect form the server
       def disconnect
         @forcedc = true
-        @socket.disconnect
+        @socket.unbind
       end
 
       # Bind to events for a given channel.
@@ -99,7 +101,7 @@ module Shove
       
       def send_data data
         if @connected
-          @socket.send_data(Yajl::Encoder.encode(data))
+          @socket.send_message(Yajl::Encoder.encode(data))
         else
           @queue << data
         end

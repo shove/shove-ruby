@@ -49,13 +49,17 @@ module EM
       @onopen = block
     end
 
+    def onclose &block
+      @onclose = block
+    end
+
     def onmessage &block
       @onmessage = block
       $backdoor = block
       @onopen.call # called
     end
 
-    def send_data data
+    def send_message data
       $queue << Yajl::Parser.parse(data)
     end
 
