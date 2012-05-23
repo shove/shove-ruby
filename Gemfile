@@ -17,4 +17,3 @@ end
 gem "em-http-request", ">= 1.0.0"
 gem "em-ws-client", ">= 0.2.0"
 gem "yajl-ruby", ">= 1.1.0"
-gem "confstruct", ">= 0.2.1"

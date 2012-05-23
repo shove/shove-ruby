@@ -8,12 +8,9 @@ module Shove
 
       # Create a Publisher
       # +app+ the app
-      def initialize app, id
-        @id = id
+      def initialize app
         @app = app
         @parser = Yajl::Parser.new(:symbolize_keys => true)
-        @config = app.config
-        @hosts = app.hosts
         @channels = {}
         @events = {}
         @queue = []
@@ -21,9 +18,13 @@ module Shove
         @connected = false
       end
 
-      def authorize app_key=nil
-        send_data :opcode => AUTHORIZE, :data => (app_key || @config.app_key)
+      # helper to auth on all channels if app_key is supplied
+      def auth!
+        if @app.app_key
+          channel("*").auth @app.channel_key("*")
+        end
       end
+
 
       # Enable or disable debugging
       # +on+ true to enable debugging
@@ -32,7 +33,8 @@ module Shove
       end
       
       # Connect to the shove stream server
-      def connect
+      def connect connect_key=nil
+        @connect_key = connect_key
 
         if @connected
           return
@@ -49,13 +51,18 @@ module Shove
 
         @socket.onopen do
           @connected = true
-          send_data :opcode => CONNECT, :data => @id
+          send_data :opcode => CONNECT, :data => (connect_key || @app.connect_key)
+          auth!
           until @queue.empty? do
             send_data @queue.shift
           end
         end
 
         @socket.onmessage do |m, binary|
+          if @debug
+            puts "DEBUG RECV #{m}"
+          end
+
           process(Yajl::Parser.parse(m))
         end
 
@@ -88,13 +95,13 @@ module Shove
       end
 
       def url
-        if @config.ws_url
-          @url = "#{@config.ws_url}/#{@config.app_id}"
+        if @app.ws_url
+          @url = "#{@app.ws_url}/#{@app.app_id}"
         else
-          if @hosts.empty?
+          if @app.hosts.empty?
             raise "Error fetching hosts for app #{@app_id}"
           end
-          @url = "ws://#{@hosts.first}/#{@config.app_id}"
+          @url = "ws://#{@app.hosts.sample}/#{@app.app_id}"
         end
         @url
       end
@@ -110,7 +117,12 @@ module Shove
       protected
 
       def reconnect
-        @reconnecting = true
+        unless @forcedc
+          @reconnecting = true
+          EM.add_timer(1) do
+            connect @connect_key
+          end
+        end
       end
 
       def emit event, *args
@@ -174,7 +186,7 @@ module Shove
       end
 
       def host
-        @hosts.first
+        @app.hosts.sample
       end
     
     end

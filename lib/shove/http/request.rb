@@ -6,9 +6,9 @@ module Shove
       
       attr_accessor :url, :key, :headers
       
-      def initialize url, config
+      def initialize url, app
         @url = url
-        @key = config.app_key
+        @key = app.app_key
       end
       
       # HTTP Delete request

@@ -1,6 +1,6 @@
-shove ruby client
-=================
-Ruby client and CLI for the shove.io HTTP and WebSocket APIs
+shove
+=====
+HTTP and WebSocket clients for shove.io
 
 <a name="installation"></a>
 Installation
@@ -11,53 +11,42 @@ gem install shove
 ```
 
 <a name="configuration"></a>
-Configuring Shove
------------------
+Using Shove
+-----------
 
-If you are using a single shove app within your project, you can configure
-shove though the Shove module:
-
-```ruby
-Shove.configure do
-  app_id "myappid"
-  app_key "myappkey"
-end
-```
-
-If you want to work with different shove apps in one project, you can 
-create App objects
+To use shove, you must first create a Shove::App object.
 
 ```ruby
-app = Shove::App.new do
-  app_id "myappid"
-  app_key "myappkey"
-end
+app = Shove::App.new(
+  app_id: "myappid",
+  app_key: "myappkey"
+)
 ```
 
-Grab your App ID and App Key from shove: [https://shove.io][0]
+Get your app_id, and app_key at [shove.io][0]
 
 <a name="http_client"></a>
 Using the HTTP Client
 ---------------------
 The HTTP client gives publishing and access control capabilities without
-a persistent WebSocket connection.  The HTTP client does not act as a subscriber.
+a persistent WebSocket connection.  The HTTP client cannot act as a subscriber.
 
-Simple Publish
+Publish to a channel
 
 ```ruby
-Shove.channel("notifications").publish("Hello World!")
+app.channel("notifications").publish("Hello World!")
 ```
 
 Publish Direct
 
 ```ruby
-Shove.channel("direct:buddy").publish("Hey buddy")
+app.channel("direct:buddy").publish("Hey buddy")
 ```
 
 Publish and handle the HTTP response
 
 ```ruby
-Shove.channel("notifications").publish("...") do |response|
+app.channel("notifications").publish("...") do |response|
   if reponse.error?
     puts "#{response.status} - #{response.error}"
   end
@@ -70,25 +59,25 @@ granular security.
 Grant subscription on the notifications channel
 
 ```ruby
-Shove.channel("notifications").grant_subscribe("dan@shove.io")
+app.channel("notifications").grant_subscribe("dan@shove.io")
 ```
 
 Grant subscription on all channels to client dan
 
 ```ruby
-Shove.channel("*").grant_subscribe("dan@shove.io")
+app.channel("*").grant_subscribe("dan@shove.io")
 ```
 
 Grant publishing on chat:client_22733 channel to client dan
 
 ```ruby
-Shove.channel("chat:client_22733").grant_publish("dan")
+app.channel("chat:client_22733").grant_publish("dan")
 ```
 
 Deny publishing on chat:client_22733 channel to dan
 
 ```ruby
-Shove.channel("chat:client_22733").deny_publish("dan")
+app.channel("chat:client_22733").deny_publish("dan")
 ```
 
 Sometimes it's easier to give out an access key to a specific
@@ -98,37 +87,37 @@ channel, which is also an option.
 Channel Keys
 ------------
 You can generate channel keys which allow clients of
-your shove network to publish and subscribe to specific
+your shove network to subscribe or publish to specific
 channels.
 
 Example: Create a key for the channel groups:788
 
 ```ruby
-key = Shove.channel_key "group:788"
-```
-
-If it's for a particular App, use:
-
-```ruby
 key = app.channel_key "group:788"
 ```
 
-This functionality becomes useful when you want to give
-you site users access.  A little haml for you:
-
-```haml
-:javascript
-  var channel = "#{@channel}";
-  var key = "#{@shove.channel_key(@channel)}";
-```
-
-Note: Channel keys are based off the app key.  So, in order for
-them to work, you must specify the app key:
+Subscribe only
 
 ```ruby
-  Shove.configure do
-    app_key "key"
-  end
+key = app.subscribe_key "group:788"
+```
+
+This functionality becomes useful when you want to give
+you site users access.  In your view:
+
+```erb
+var channel = "<%= @channel %>";
+var key = "<%= @app.channel_key(@channel) %>";
+```
+
+Note: Channel keys are based off the app key (master key).  So, in order for
+them to work, you must specify the app key in your app.
+
+```ruby
+app = Shove::App.new(
+  app_id: "myappid",
+  app_key: "myappkey"
+)
 ```
 
 <a name="websocket_client"></a>
@@ -139,26 +128,13 @@ requires that you are running an EventMachine reactor.
 
 ```ruby
 EM.run do
-  app = Shove::App.new do
-    app_id "myapp"
-  end
+  app = Shove::App.new(
+    app_id "myapp",
+    app_key: "myappkey"
+  )
 
-  app.connect
-
-  # alternatively, supply your user id
-  client = app.connect "unique_id"
+  client = app.connect
 end
-```
-
-### Authorization
-The client is treated like any other websocket
-client and must be authorized to publish and subscribe.
-
-```ruby
-client.authorize "app_key"
-
-# self authorize a particular channel
-client.channel("channel").authorize "channel_key"
 ```
 
 ### Client events
@@ -195,7 +171,7 @@ client.on("connect_denied") do |id|
 end
 ```
 
-### Publish and Subscribe
+### Channels & Publish and Subscribe
 
 Subscribe to a channel or get a subscribed channel
 
@@ -265,37 +241,27 @@ channel.publish("hi!")
 channel.publish(obj.to_json)
 ```
 
-Using the Command Line
-----------------------
+<a name="websocket_client"></a>
+WebSocket Client without App Key
+--------------------------------
+If you are connecting to someone elses app
+and have limited scope and access, you can get by.
 
-A CLI utility is included with the gem, run help to see options
+```ruby
+EM.run do
+  app = Shove::App.new(
+    app_id "myapp"
+  )
 
-```bash
-shove help
-```
+  client = app.connect "connect-key"
 
-Publish a message
+  channel = client.channel("channel")
+  channel.auth "channelkey"
 
-```bash
-shove publish -c channel1 -m "Hello world!"
-```
-
-Publish to a specific app
-
-```bash
-shove publish -a app_id -c chan1 -m "hi"
-```
-
-Set the default app for the CLI
-
-```bash
-shove apps:default -a app_id
-```
-
-Watch all activity on a channel
-
-```bash
-shove watch -c chan
+  channel.on("message") do |message|
+    puts message
+  end
+end
 ```
 
 [0]: https://shove.io

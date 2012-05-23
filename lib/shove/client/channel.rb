@@ -82,6 +82,10 @@ module Shove
         @conn.send_data :opcode => AUTHORIZE, :channel => @name, :data => channel_key.to_s
       end
 
+      def auth channel_key
+        authorize channel_key
+      end
+
       private
 
       def emit event, *args

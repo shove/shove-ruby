@@ -3,12 +3,12 @@ require File.dirname(__FILE__) + "/helper"
 describe Shove::Client do
 
   before(:all) do 
-    Shove.configure do
-      app_id "test"
-      app_key "test"
-      api_url "http://api.shove.dev:8080"
-      ws_url "ws://shove.dev:9000"
-    end
+    @app = Shove::App.new(
+      app_id: "test",
+      app_key: "test",
+      api_url: "http://api.shove.dev:8000",
+      ws_url: "ws://shove.dev:9000"
+    )
   end
 
   before do |context|
@@ -21,26 +21,25 @@ describe Shove::Client do
   end
 
   it "should spawn a client" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @client.should_not == nil
-    @client.url.should == "#{Shove.config.ws_url}/test"
+    @client.url.should == "#{@app.ws_url}/test"
   end
 
   it "should send a connect op" do
-    @client = Shove.app.connect
-    message = $queue.pop
+    @client = @app.connect
+    message = $queue.shift
     message["opcode"].should == Shove::Protocol::CONNECT
   end
 
-  it "should send a connect op with an id" do
-    @client = Shove.app.connect("monkey")
+  it "should self authorize if key is set" do
+    @client = @app.connect
     message = $queue.pop
-    message["opcode"].should == Shove::Protocol::CONNECT
-    message["data"].should == "monkey"
+    message["opcode"].should == Shove::Protocol::AUTHORIZE
   end
 
   it "should trigger a connect event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @client.on("connect") do |client_id|
       @triggered = true
       @id = client_id
@@ -53,7 +52,7 @@ describe Shove::Client do
   end
 
   it "should trigger a connect_denied event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @client.on("connect_denied") do |client_id|
       @triggered = true
       @id = client_id
@@ -67,7 +66,7 @@ describe Shove::Client do
 
 
   it "should trigger a disconnect event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @client.on("disconnect") do
       @triggered = true
     end
@@ -78,7 +77,7 @@ describe Shove::Client do
   end
 
   it "should trigger an error event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @client.on("error") do |error|
       @error = error
     end
@@ -89,13 +88,13 @@ describe Shove::Client do
   end
 
   it "should authorize oneself" do
-    @client = Shove.app.connect
-    @client.authorize("test")
+    @client = @app.connect
+    @client.auth!
     $queue.last()["opcode"].should == Shove::Protocol::AUTHORIZE
   end
 
   it "should create a channel context" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
 
     @channel.should_not == nil
@@ -103,7 +102,7 @@ describe Shove::Client do
   end
 
   it "should subscribe to a channel" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     $queue.last["opcode"].should_not == Shove::Protocol::SUBSCRIBE
     @channel.on("message") do
@@ -112,7 +111,7 @@ describe Shove::Client do
   end
 
   it "should get a subscribe granted event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.on("subscribe") do
       @triggered = true
@@ -127,7 +126,7 @@ describe Shove::Client do
     @messages = 0
     @message = nil
 
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.on("message") do |msg|
       @messages += 1
@@ -143,7 +142,7 @@ describe Shove::Client do
   it "should cancel a binding" do
     @messages = 0
 
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     binding = @channel.on("message") do |msg|
       @messages += 1
@@ -164,7 +163,7 @@ describe Shove::Client do
   end
 
   it "should unsubscribe from a channel" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.unsubscribe
     @message = $queue.last
@@ -172,7 +171,7 @@ describe Shove::Client do
   end
 
   it "should receive an unsubscribe event" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.unsubscribe
     @channel.on("unsubscribe") do
@@ -186,7 +185,7 @@ describe Shove::Client do
 
 
   it "should publish" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.publish "test"
 
@@ -194,12 +193,22 @@ describe Shove::Client do
   end
 
   it "should generate a channel key" do
-    key = Shove.channel_key "money"
+    key = @app.channel_key "money"
+    key.should == "5cf0a03b439091a07eb544832fc11c62f0b1af17"
+  end
+
+  it "should generate a subscribe key" do
+    key = @app.subscribe_key "money"
     key.should == "6f78f2ba414a482fc5c45eb080d8877ddf1fc6ba"
   end
 
+  it "should generate a publish key" do
+    key = @app.publish_key "money"
+    key.should == "5cf0a03b439091a07eb544832fc11c62f0b1af17"
+  end
+
   it "should authorize on a channel" do
-    @client = Shove.app.connect
+    @client = @app.connect
     @channel = @client.channel("channel")
     @channel.authorize "key"
 

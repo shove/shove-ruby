@@ -9,7 +9,9 @@ module Shove
     CONNECT_DENIED = 0x03
     DISCONNECT = 0x04
     DISCONNECT_COMPLETE = 0x06
-
+    REDIRECT = 0x07
+    SET_IDENTITY = 0x08
+    
     # Subscribe Ops
     SUBSCRIBE = 0x10 
     SUBSCRIBE_GRANTED = 0x11
