@@ -108,8 +108,14 @@ module Shove
       
       def send_data data
         if @connected
+          if @debug
+            puts "DEBUG SEND #{data}"
+          end
           @socket.send_message(Yajl::Encoder.encode(data))
         else
+          if @debug
+            puts "DEBUG QUEUE #{data}"
+          end
           @queue << data
         end
       end
