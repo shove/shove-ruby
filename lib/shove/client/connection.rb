@@ -96,12 +96,12 @@ module Shove
 
       def url
         if @app.ws_url
-          @url = "#{@app.ws_url}/#{@app.app_id}"
+          @url = "#{@app.ws_url}/v1/#{@app.app_id}"
         else
           if @app.hosts.empty?
             raise "Error fetching hosts for app #{@app_id}"
           end
-          @url = "ws://#{@app.hosts.sample}/#{@app.app_id}"
+          @url = "ws://#{@app.hosts.sample}/v1/#{@app.app_id}"
         end
         @url
       end

@@ -46,7 +46,7 @@ module Shove
 
     # the base URL based on the settings
     def url
-      "#{@api_url}/apps/#{@app_id}"
+      "#{@api_url}/v1/apps/#{@app_id}"
     end
 
     # Create a default request object with the base URL
